@@ -1,24 +1,9 @@
 package org.example.thunder.field;
 
-import org.example.thunder.file.JavaClass;
+public interface JavaField {
 
-public class JavaField {
+    String getAnnotation();
 
-    private String name;
+    String getText();
 
-    private String qualifiedName;
-
-    private JavaClass javaClass;
-
-    public String getName() {
-        return name;
-    }
-
-    public String getQualifiedName() {
-        return qualifiedName;
-    }
-
-    public JavaClass getJavaClass() {
-        return javaClass;
-    }
 }

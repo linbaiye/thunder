@@ -13,6 +13,9 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="org.example.thunder"
+                    anchor="bottom"
+                    factoryClass="com.intellij.execution.services.ServiceViewToolWindowFactory"></toolWindow>
         <!-- Add your extensions here -->
     </extensions>
 
