@@ -1,9 +1,8 @@
-package org.example.thunder;
+package org.fastj.thunder;
 
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.lang.jvm.JvmParameter;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -13,11 +12,9 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.*;
-import com.intellij.psi.impl.source.PsiCodeFragmentImpl;
-import com.intellij.psi.impl.source.tree.PsiPlainTextImpl;
-import com.intellij.psi.impl.source.tree.java.PsiBlockStatementImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.content.Content;
+import org.fastj.thunder.modifier.UnitTestClassModifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -73,14 +70,10 @@ public class PopupDialogAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
-        if (psiFile != null) {
+        if (psiFile instanceof PsiJavaFile) {
             Messages.showInfoMessage("Adding method to " + psiFile.getName(), "Current File Name");
-            createTestMethod(psiFile);
+            Optional<UnitTestClassModifier> optional = UnitTestClassModifier.create((PsiJavaFile)psiFile);
+            optional.ifPresent(UnitTestClassModifier::tryModify);
         }
-//        Optional<JavaMethod> optionalMethod = JavaMethod.fromContainingMethodOrSelf(psiElement);
-//        optionalMethod.ifPresent(e -> {
-//            StringBuilder stringBuilder = new StringBuilder();
-//            Messages.showInfoMessage(stringBuilder.toString(), "Arguments");
-//        });
     }
 }

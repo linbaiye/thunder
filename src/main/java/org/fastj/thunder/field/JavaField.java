@@ -1,4 +1,4 @@
-package org.example.thunder.field;
+package org.fastj.thunder.field;
 
 public interface JavaField {
 

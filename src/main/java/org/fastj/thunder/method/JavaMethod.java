@@ -1,4 +1,4 @@
-package org.example.thunder.method;
+package org.fastj.thunder.method;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;

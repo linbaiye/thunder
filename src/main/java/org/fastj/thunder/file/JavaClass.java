@@ -1,6 +1,5 @@
-package org.example.thunder.file;
+package org.fastj.thunder.file;
 
-import com.intellij.psi.PsiChildLink;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiParameter;
 

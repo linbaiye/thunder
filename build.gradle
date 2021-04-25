@@ -3,7 +3,7 @@ plugins {
     id 'org.jetbrains.intellij' version '0.7.2'
 }
 
-group 'org.example'
+group 'org.fastj'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
@@ -14,6 +14,7 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.1.0'
 }
 
 
@@ -28,3 +29,7 @@ patchPluginXml {
       Add change notes here.<br>
       <em>most HTML tags may be used</em>"""
 }
+
+//test {
+//    systemProperty "idea.home.path", "/Users/manbang/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2019.3.5/c9fd4cd48d1a51f89fa8b1eb36c52267cd74c15c/ideaIC-2019.3.5"
+//}
