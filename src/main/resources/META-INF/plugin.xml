@@ -1,28 +1,25 @@
 <idea-plugin>
     <id>org.fastj.thunder</id>
-    <name>Plugin display name here</name>
-    <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
+    <name>Thunder</name>
+    <vendor email="" url="http://www.fastj.org">Fast java coding</vendor>
 
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
+        <p>thunder is a plugin that makes java coding faster.</p>
     ]]></description>
 
-    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-         on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="org.fastj.thunder"
-                    anchor="bottom"
-                    factoryClass="com.intellij.execution.services.ServiceViewToolWindowFactory"></toolWindow>
-        <!-- Add your extensions here -->
-    </extensions>
+<!--    <extensions defaultExtensionNs="com.intellij">-->
+<!--        <toolWindow id="thunder"-->
+<!--                    secondary="false"-->
+<!--                    anchor="bottom"-->
+<!--                    factoryClass="com.intellij.execution.services.ServiceViewToolWindowFactory" />-->
+<!--    </extensions>-->
 
     <actions>
         <action id="org.fastj.thunder.PopupDialogAction" class="org.fastj.thunder.PopupDialogAction"
-                text="PopupDialog" description="example">
-            <add-to-group group-id="ToolsMenu" anchor="first"/>
+                text="Mock" description="Mock dependencies">
+            <add-to-group group-id="CodeMenu" anchor="last" />
         </action>
     </actions>
 </idea-plugin>

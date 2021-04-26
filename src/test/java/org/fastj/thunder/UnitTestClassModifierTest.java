@@ -42,12 +42,45 @@ public class UnitTestClassModifierTest extends LightJavaCodeInsightFixtureTestCa
                     "String value() default \"\";\n" +
                     "}";
 
+    @Language("JAVA")
+    private final static String RUN_WITH_CLASS=
+            "package org.junit.runner;\n" +
+            "@Target({FIELD, PARAMETER})\n" +
+            "@Retention(RUNTIME)\n" +
+            "public @interface RunWith {    Class<? extends Runner> value(); }";
+
+    @Language("JAVA")
+    private final static String MOCKITO_RUNNER_CLASS =
+            "package org.mockito.junit;" +
+                    "public class MockitoJUnitRunner { }";
+
+
+
+    @Language("JAVA")
+    private final static String MOCK_CLASS =
+            "package org.mockito;\n" +
+                    "@Target({FIELD, PARAMETER})\n" +
+                    "@Retention(RUNTIME)\n" +
+                    "public @interface Mock { }";
+
+
+    @Language("JAVA")
+    private final static String INJECT_MOCK_CLASS =
+            "package org.mockito;\n" +
+                    "@Target({FIELD, PARAMETER})\n" +
+                    "@Retention(RUNTIME)\n" +
+                    "public @interface InjectMocks { }";
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
         myFixture.addFileToProject("src/main/java/org/fastj/thunder/TestingService.java", TEST_FILE_CONTENT);
         myFixture.addFileToProject("src/main/java/org/springframework/stereotype/Service.java", SPRING_ANNOTATION);
         myFixture.addFileToProject("src/main/test/org/fastj/thunder/TestingServiceUT.java", UNIT_TEST_CONTENT);
+        myFixture.addFileToProject("src/main/java/org/mockito/Mock.java", MOCK_CLASS);
+        myFixture.addFileToProject("src/main/java/org/mockito/InjectMocks.java", INJECT_MOCK_CLASS);
+        myFixture.addFileToProject("src/main/java/org/mockito/junit/MockitoJUnitRunner.java", MOCKITO_RUNNER_CLASS);
+        myFixture.addFileToProject("src/main/java/org/junit/runner/RunWith.java", RUN_WITH_CLASS);
     }
 
 
@@ -59,14 +92,6 @@ public class UnitTestClassModifierTest extends LightJavaCodeInsightFixtureTestCa
         modifier.tryModify();
         PsiClass modifiedClass = JavaPsiFacade.getInstance(getProject()).findClass("org.fastj.thunder.TestingServiceUT",
                 ProjectScope.getProjectScope(getProject()));
-        PsiAnnotation[] annotations = modifiedClass.getAnnotations();
-        assertSame(1, annotations.length);
-        optional = UnitTestClassModifier.create((PsiJavaFile)psiFiles[0]);
-        modifier = optional.orElseThrow(IllegalArgumentException::new);
-        modifier.tryModify();
-        modifiedClass = JavaPsiFacade.getInstance(getProject()).findClass("org.fastj.thunder.TestingServiceUT",
-                ProjectScope.getProjectScope(getProject()));
-        annotations = modifiedClass.getAnnotations();
-        assertSame(1, annotations.length);
+        System.out.println(modifiedClass.getText());
     }
 }

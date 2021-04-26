@@ -6,13 +6,14 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
+import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.search.ProjectScope;
 import org.assertj.core.util.Preconditions;
+import org.fastj.thunder.until.NamingUtil;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -66,12 +67,65 @@ public class UnitTestClassModifier implements ClassModifier {
         });
     }
 
-    private void tryAddFields(PsiClass classUnderTest) {
-        Map<String, PsiField> possibleInjections = Stream.of(classUnderTest.getAllFields())
-                .filter(e -> !e.hasInitializer())
-                .collect(Collectors.toMap(PsiField::getName, Function.identity()));
-        for (String s : possibleInjections.keySet()) {
-            
+
+    private void addField(PsiField psiField) {
+        PsiField[] fields = unitTestClass.getAllFields();
+        PsiElement addedElement;
+        if (fields.length > 0) {
+            addedElement = unitTestClass.addAfter(psiField, fields[fields.length - 1]);
+        } else {
+            addedElement = unitTestClass.add(psiField);
+        }
+        JavaCodeStyleManager.getInstance(project).shortenClassReferences(addedElement);
+        PsiParserFacade parserFacade = PsiParserFacade.SERVICE.getInstance(project);
+        PsiElement lineBreak = parserFacade.createWhiteSpaceFromText("\n\n");
+        addedElement.getParent().addBefore(lineBreak, addedElement);
+    }
+
+
+    private void tryAddTestedClass(PsiClass classUnderTest) {
+        for (PsiField field : unitTestClass.getFields()) {
+            if (field.getType() instanceof PsiClassReferenceType) {
+                PsiClassReferenceType classReferenceType = (PsiClassReferenceType) field.getType();
+                if (classReferenceType.getClassName().equals(classUnderTest.getName())) {
+                    return;
+                }
+            }
+        }
+        PsiField newField = PsiElementFactory.getInstance(project).createFieldFromText("private " + classUnderTest.getName() +
+                        " " + NamingUtil.nameClass(classUnderTest.getName()) + ";", unitTestClass);
+        WriteCommandAction.runWriteCommandAction(project, "injectFields", ACTION_GROUP_ID, () -> {
+            newField.getModifierList().addAnnotation("org.mockito.InjectMocks");
+            addField(newField);
+        });
+    }
+
+
+    /**
+     * Mocks injected beans in the unit test class from the under class.
+     * @param classUnderTest the class under test.
+     */
+    private void tryAddMockedFields(PsiClass classUnderTest) {
+        List<PsiField> notMockedFields = Stream.of(classUnderTest.getAllFields())
+                .filter(e -> !e.hasInitializer() &&
+                        unitTestClass.findFieldByName(e.getName(), true) == null)
+                .collect(Collectors.toList());
+        for (PsiField notMockedField : notMockedFields) {
+            PsiField copiedField = (PsiField)notMockedField.copy();
+            PsiModifierList modifierList = copiedField.getModifierList();
+            if (modifierList == null) {
+                continue;
+            }
+            for (PsiElement modifier : modifierList.getChildren()) {
+                if ("final".equals(modifier.getText())) {
+                    modifier.delete();
+                    break;
+                }
+            }
+            WriteCommandAction.runWriteCommandAction(project, "injectFields", ACTION_GROUP_ID, () -> {
+                modifierList.addAnnotation("org.mockito.Mock");
+                addField(copiedField);
+            });
         }
     }
 
@@ -83,6 +137,8 @@ public class UnitTestClassModifier implements ClassModifier {
             return;
         }
         tryAddRunnerWithAnnotation();
+        tryAddTestedClass(classUnderTest);
+        tryAddMockedFields(classUnderTest);
     }
 
     private PsiClass getClassUnderTest() {
