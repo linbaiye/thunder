@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
-import org.fastj.thunder.logging.ConsoleViewPrinter;
 import org.fastj.thunder.modifier.CodeModifier;
 import org.fastj.thunder.until.NamingUtil;
 
@@ -60,10 +59,6 @@ public class RepositoryCodeModifier implements CodeModifier {
         List<String> wordList = new LinkedList<>();
         while (matcher.find()) {
             wordList.add(matcher.group(1));
-        }
-        PsiParameterList parameterList = psiMethod.getParameterList();
-        if ((parameterList.getParametersCount() < wordList.size())) {
-            ConsoleViewPrinter.getInstance(project).appendInfo("Method " + psiMethod.getName() + " has less ");
         }
         List<Criterion> criterionList = new LinkedList<>();
         String currentProperty = null, currentOperator = null;
@@ -121,11 +116,12 @@ public class RepositoryCodeModifier implements CodeModifier {
         stringBuilder.append(daoOrRepositoryField.getName());
         stringBuilder.append(".selectOne(new LambdaQueryWrapper<");
         stringBuilder.append(entityClass.getName());
-        stringBuilder.append(">()");
+        stringBuilder.append(">()\n");
         psiMethod.getParameterList().getParameters();
         for (Criterion criterion : criteria) {
             if (entityClass.findFieldByName(criterion.getPropertyName(), false) != null) {
                 stringBuilder.append(criterion.buildQuery(entityClass.getName()));
+                stringBuilder.append("\n");
             }
         }
         stringBuilder.append(");");

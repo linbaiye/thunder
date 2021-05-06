@@ -64,10 +64,10 @@ public class RepositoryCodeModifierTest extends LightJavaCodeInsightFixtureTestC
         PsiField dao = modifiedClass.findFieldByName("entityDao", false);
         PsiClass entity = JavaPsiFacade.getInstance(getProject()).findClass("org.fastj.thunder.model.Entity",
                 ProjectScope.getProjectScope(getProject()));
-//        Optional<RepositoryCodeModifier> optional = RepositoryCodeModifier.from(method, entity, method.getBody().getChildren()[2], dao);
-//        optional.ifPresent(e -> {
-//            e.tryModify();
-//            System.out.println(modifiedClass.getText());
-//        });
+        Optional<RepositoryCodeModifier> optional = RepositoryCodeModifier.from(method, entity, method.getBody().getChildren()[2], dao);
+        optional.ifPresent(e -> {
+            e.tryModify();
+            System.out.println(modifiedClass.getText());
+        });
     }
 }
