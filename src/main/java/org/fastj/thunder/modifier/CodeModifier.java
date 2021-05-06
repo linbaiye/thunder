@@ -1,6 +1,6 @@
 package org.fastj.thunder.modifier;
 
-public interface ClassModifier {
+public interface CodeModifier {
 
     void tryModify();
 

@@ -9,6 +9,8 @@ import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.search.ProjectScope;
 import org.assertj.core.util.Preconditions;
+import org.fastj.thunder.logging.Logger;
+import org.fastj.thunder.logging.LoggerFactory;
 import org.fastj.thunder.until.NamingUtil;
 
 import java.util.List;
@@ -20,7 +22,7 @@ import java.util.stream.Stream;
 /**
  * Injects mockito contents.
  */
-public class UnitTestClassModifier implements ClassModifier {
+public class UnitTestCodeModifier implements CodeModifier {
 
     private final PsiJavaFile psiJavaFile;
 
@@ -32,6 +34,9 @@ public class UnitTestClassModifier implements ClassModifier {
 
     private final static String ACTION_GROUP_ID = "UnitTest";
 
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(UnitTestCodeModifier.class);
+
     private final static Set<String> SPRING_STEREOTYPES = ImmutableSet.of(
             "org.springframework.stereotype.Component",
             "org.springframework.stereotype.Controller",
@@ -41,7 +46,7 @@ public class UnitTestClassModifier implements ClassModifier {
 
     private final static String RUN_WITH_ANNOTATION = "org.junit.runner.RunWith(org.mockito.junit.MockitoJUnitRunner.class)";
 
-    private UnitTestClassModifier(PsiJavaFile psiJavaFile) {
+    private UnitTestCodeModifier(PsiJavaFile psiJavaFile) {
         Preconditions.checkNotNull(psiJavaFile);
         this.psiJavaFile = psiJavaFile;
         this.unitTestClass = this.psiJavaFile.getClasses()[0];
@@ -139,10 +144,11 @@ public class UnitTestClassModifier implements ClassModifier {
         tryAddRunnerWithAnnotation();
         tryAddTestedClass(classUnderTest);
         tryAddMockedFields(classUnderTest);
+        LOGGER.info("Modified unit test class.");
     }
 
     private PsiClass getClassUnderTest() {
-        return JavaPsiFacade.getInstance(psiJavaFile.getProject()).findClass(getQualifiedClassNameTested(), ProjectScope.getProjectScope(project));
+        return JavaPsiFacade.getInstance(project).findClass(getQualifiedClassNameTested(), ProjectScope.getProjectScope(project));
     }
 
     private boolean isAnnotatedWithSpringStereotype(PsiClass classUnderTest) {
@@ -154,7 +160,7 @@ public class UnitTestClassModifier implements ClassModifier {
     }
 
 
-    public static Optional<UnitTestClassModifier> create(PsiJavaFile psiJavaFile) {
+    public static Optional<UnitTestCodeModifier> create(PsiJavaFile psiJavaFile) {
         PsiClass[] psiClasses = psiJavaFile.getClasses();
         if (psiClasses.length != 1) {
             return Optional.empty();
@@ -162,7 +168,7 @@ public class UnitTestClassModifier implements ClassModifier {
         if (psiClasses[0].getQualifiedName() == null || !psiClasses[0].getQualifiedName().endsWith(EXPECTED_CLASS_EXT)) {
             return Optional.empty();
         }
-        return Optional.of(new UnitTestClassModifier(psiJavaFile));
+        return Optional.of(new UnitTestCodeModifier(psiJavaFile));
     }
 
 }

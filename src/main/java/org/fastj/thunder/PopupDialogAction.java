@@ -2,16 +2,16 @@ package org.fastj.thunder;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.*;
-import org.fastj.thunder.logging.LoggingManager;
-import org.fastj.thunder.modifier.UnitTestClassModifier;
+import org.fastj.thunder.logging.LoggerFactory;
+import org.fastj.thunder.modifier.CodeModifier;
+import org.fastj.thunder.modifier.CodeModifierFactory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
 public class PopupDialogAction extends AnAction {
+
 
     @Override
     public void update(@NotNull AnActionEvent e) {
@@ -20,20 +20,11 @@ public class PopupDialogAction extends AnAction {
         e.getPresentation().setEnabledAndVisible(project != null);
     }
 
-    private void print(Project project, String message) {
-    }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
-        PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
-        if (psiFile instanceof PsiJavaFile) {
-            try {
-                Optional<UnitTestClassModifier> optional = UnitTestClassModifier.create((PsiJavaFile) psiFile);
-                optional.ifPresent(UnitTestClassModifier::tryModify);
-                LoggingManager.getInstance(psiFile.getProject()).appendInfo("Mocked fields.");
-            } catch (Exception e) {
-                LoggingManager.getInstance(psiFile.getProject()).appendError("Mocked fields.");
-            }
-        }
+        LoggerFactory.setProject(event.getProject());
+        Optional<? extends CodeModifier> optional = CodeModifierFactory.getInstance().create(event);
+        optional.ifPresent(CodeModifier::tryModify);
     }
 }

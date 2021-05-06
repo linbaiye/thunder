@@ -18,7 +18,7 @@
 
     <actions>
         <action id="org.fastj.thunder.PopupDialogAction" class="org.fastj.thunder.PopupDialogAction"
-                text="Mock" description="Mock dependencies">
+                text="Thunder" description="Speed development up.">
             <add-to-group group-id="CodeMenu" anchor="last" />
         </action>
     </actions>

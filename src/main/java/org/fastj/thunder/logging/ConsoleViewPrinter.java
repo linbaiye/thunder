@@ -12,14 +12,13 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import org.fastj.thunder.toolwindow.Icons;
 
-public class LoggingManager {
-
+public class ConsoleViewPrinter {
 
     private ConsoleView consoleView;
 
-    private final static Key<LoggingManager> CONSOLE_VEW_KEY = new Key<>("CONSOLE_VEW_KEY");
+    private final static Key<ConsoleViewPrinter> CONSOLE_VEW_KEY = new Key<>("CONSOLE_VEW_KEY");
 
-    private LoggingManager(ConsoleView consoleView) {
+    private ConsoleViewPrinter(ConsoleView consoleView) {
         this.consoleView = consoleView;
     }
 
@@ -55,9 +54,9 @@ public class LoggingManager {
         }
     }
 
-    public static LoggingManager getInstance(Project project) {
-        LoggingManager loggingManager = project.getUserData(CONSOLE_VEW_KEY);
-        if (loggingManager == null) {
+    public static ConsoleViewPrinter getInstance(Project project) {
+        ConsoleViewPrinter consoleViewPrinter = project.getUserData(CONSOLE_VEW_KEY);
+        if (consoleViewPrinter == null) {
             ToolWindow outputWindow = ToolWindowManager.getInstance(project).registerToolWindow("Thunder",
                     true, ToolWindowAnchor.BOTTOM);
             if (Icons.THUNDER_ICON != null) {
@@ -67,11 +66,11 @@ public class LoggingManager {
             Content content = outputWindow.getContentManager().getFactory().createContent(consoleView.getComponent(),
                     "Output", false);
             outputWindow.getContentManager().addContent(content);
-            loggingManager = new LoggingManager(consoleView);
-            loggingManager.activateLoggingConsole(project);
-            project.putUserData(CONSOLE_VEW_KEY, loggingManager);
+            consoleViewPrinter = new ConsoleViewPrinter(consoleView);
+            consoleViewPrinter.activateLoggingConsole(project);
+            project.putUserData(CONSOLE_VEW_KEY, consoleViewPrinter);
         }
-        return loggingManager;
+        return consoleViewPrinter;
     }
 
 }
