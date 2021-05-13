@@ -107,7 +107,7 @@ public class UnitTestCodeModifier implements CodeModifier {
 
 
     /**
-     * Mocks injected beans in the unit test class from the under class.
+     * Mocks injected beans in the unit test class from class under test.
      * @param classUnderTest the class under test.
      */
     private void tryAddMockedFields(PsiClass classUnderTest) {
@@ -117,6 +117,9 @@ public class UnitTestCodeModifier implements CodeModifier {
                 .collect(Collectors.toList());
         for (PsiField notMockedField : notMockedFields) {
             PsiField copiedField = (PsiField)notMockedField.copy();
+            if (copiedField == null) {
+                continue;
+            }
             PsiModifierList modifierList = copiedField.getModifierList();
             if (modifierList == null) {
                 continue;
@@ -158,7 +161,6 @@ public class UnitTestCodeModifier implements CodeModifier {
         }
         return Stream.of(annotations).anyMatch(e -> SPRING_STEREOTYPES.contains(e.getQualifiedName()));
     }
-
 
     public static Optional<UnitTestCodeModifier> create(PsiJavaFile psiJavaFile) {
         PsiClass[] psiClasses = psiJavaFile.getClasses();

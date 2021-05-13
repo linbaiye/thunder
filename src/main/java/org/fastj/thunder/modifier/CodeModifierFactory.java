@@ -5,6 +5,8 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.psi.*;
 import org.fastj.thunder.modifier.persistence.RepositoryCodeModifier;
 import org.fastj.thunder.modifier.persistence.RepositoryStructureParser;
+import org.fastj.thunder.scope.DefaultScopeMatcher;
+import org.fastj.thunder.scope.Scope;
 
 import java.util.Optional;
 
@@ -16,24 +18,24 @@ public class CodeModifierFactory {
         return CODE_MODIFIER_FACTORY;
     }
 
-    private boolean isUnitTest(PsiJavaFile psiJavaFile) {
-        return psiJavaFile.getName().endsWith("UT.java") &&
-                psiJavaFile.getContainingDirectory() != null &&
-                psiJavaFile.getContainingDirectory().getVirtualFile().getPath().contains("src/test/java");
-    }
-
     public Optional<? extends CodeModifier> create(AnActionEvent actionEvent) {
         PsiFile psiFile = actionEvent.getData(CommonDataKeys.PSI_FILE);
         if (!(psiFile instanceof PsiJavaFile)) {
             return Optional.empty();
         }
         PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
-        if (isUnitTest(psiJavaFile)) {
-            return UnitTestCodeModifier.create(psiJavaFile);
-        } else if (RepositoryStructureParser.isEventOccurredInRepositoryFile(actionEvent)) {
-            RepositoryStructureParser parser = RepositoryStructureParser.from(actionEvent);
-            return RepositoryCodeModifier.from(parser.findCurrentMethod(), parser.findEntityClass(), parser.findDaoIdentifierNearFocusedElement(), parser.findDaoField());
+        Scope scope = new DefaultScopeMatcher().match(actionEvent);
+        switch (scope) {
+            case UNIT_TEST_CLASS:
+                return UnitTestCodeModifier.create(psiJavaFile);
+            case REPOSITORY:
+                RepositoryStructureParser parser = RepositoryStructureParser.from(actionEvent);
+                return RepositoryCodeModifier.from(parser.findCurrentMethod(), parser.findEntityClass(),
+                        parser.findDaoIdentifierNearFocusedElement(), parser.findDaoField());
+            case BUILDER:
+
+            default:
+                return Optional.empty();
         }
-        return Optional.empty();
     }
 }

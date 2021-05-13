@@ -18,7 +18,7 @@
 
     <actions>
         <action id="org.fastj.thunder.PopupDialogAction" class="org.fastj.thunder.PopupDialogAction"
-                text="Thunder" description="Speed development up.">
+                text="Thunder" description="Development made faster.">
             <add-to-group group-id="CodeMenu" anchor="last" />
         </action>
     </actions>

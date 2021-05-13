@@ -26,7 +26,7 @@ public class RepositoryStructureParser {
     }
 
     /**
-     * The method where the caret is located.
+     * The method which contains caret.
      * @return
      */
     public PsiMethod findCurrentMethod() {
