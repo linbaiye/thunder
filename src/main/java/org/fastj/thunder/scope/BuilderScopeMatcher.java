@@ -3,24 +3,26 @@ package org.fastj.thunder.scope;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Caret;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiIdentifier;
-import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.*;
 
 public class BuilderScopeMatcher implements ScopeMatcher {
 
     private boolean isBuilderScope(AnActionEvent actionEvent) {
         PsiJavaFile psiJavaFile = (PsiJavaFile) actionEvent.getData(CommonDataKeys.PSI_FILE);
         Caret caret = actionEvent.getData(CommonDataKeys.CARET);
-        if (caret == null) {
+        if (caret == null || psiJavaFile == null) {
             return false;
         }
         PsiElement pe = psiJavaFile.findElementAt(caret.getCaretModel().getOffset());
-        if (!(pe instanceof PsiIdentifier)) {
+        if (pe == null) {
             return false;
         }
-        PsiIdentifier psiIdentifier = (PsiIdentifier) pe;
-        return "builder".equalsIgnoreCase(pe.getText());
+        PsiElement psiElement = pe.getParent();
+        if (!(psiElement instanceof PsiReferenceExpression)) {
+            return false;
+        }
+        PsiReferenceExpression referenceExpression = (PsiReferenceExpression) psiElement;
+        return referenceExpression.getText().contains("builder()");
     }
 
     @Override
@@ -30,4 +32,5 @@ public class BuilderScopeMatcher implements ScopeMatcher {
         }
         return Scope.UNKNOWN;
     }
+
 }

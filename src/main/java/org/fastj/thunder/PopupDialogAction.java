@@ -9,6 +9,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.psi.*;
+import com.intellij.psi.impl.source.PsiClassReferenceType;
+import com.intellij.psi.util.PsiClassUtil;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiTypesUtil;
 import org.fastj.thunder.logging.LoggerFactory;
 import org.fastj.thunder.modifier.CodeModifier;
 import org.fastj.thunder.modifier.CodeModifierFactory;
@@ -17,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 
 public class PopupDialogAction extends AnAction {
@@ -70,36 +75,118 @@ public class PopupDialogAction extends AnAction {
     }
 
 
-    private void dump(PsiWhiteSpace psiWhiteSpace) {
-        if (!(psiWhiteSpace.getParent() instanceof PsiReferenceExpression)) {
-            return;
+    private PsiMethod findMethod(PsiElement element) {
+        PsiMethod method = (element instanceof PsiMethod) ? (PsiMethod) element :
+                PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+        if (method != null && method.getContainingClass() instanceof PsiAnonymousClass) {
+            return findMethod(method.getParent());
         }
-        PsiReferenceExpression referenceExpression = (PsiReferenceExpression) psiWhiteSpace.getParent();
-        referenceExpression.accept(new PsiElementVisitor() {
+        return method;
+    }
+
+
+    private void dumpReference(PsiReferenceExpression referenceExpression) {
+        referenceExpression.acceptChildren(new JavaElementVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
-                System.out.println(element.getClass() + ": " + element.getText());
+            public void visitClass(PsiClass aClass) {
+                System.out.println(aClass.getClass() + ": " + aClass.getText());
+            }
+
+            @Override
+            public void visitIdentifier(PsiIdentifier identifier) {
+                System.out.println(identifier.getClass() + ": " + identifier.getText());
+            }
+
+            @Override
+            public void visitMethodCallExpression(PsiMethodCallExpression expression) {
+                System.out.println(expression.getClass() + ": " + expression.getText());
+                PsiMethod psiMethod = expression.resolveMethod();
+                if (psiMethod == null) {
+                    return;
+                }
+                PsiType type = psiMethod.getReturnType();
+                PsiClass builder = PsiTypesUtil.getPsiClass(type);
+                if (builder != null) {
+                    System.out.println(builder.getClass());
+                }
+            }
+
+            @Override
+            public void visitParameterList(PsiParameterList list) {
+                System.out.println(list.getClass() + ": " + list.getText());
             }
         });
+        PsiMethod method = findMethod(referenceExpression);
+        if (method != null) {
+//            new JavaRecursiveElementWalkingVisitor()
+            method.acceptChildren(new JavaElementVisitor() {
+                @Override
+                public void visitCodeBlock(PsiCodeBlock block) {
+                    block.acceptChildren(new JavaElementVisitor() {
+                        @Override
+                        public void visitForStatement(PsiForStatement statement) {
+                            statement.acceptChildren(new JavaElementVisitor() {
+                                @Override
+                                public void visitElement(PsiElement element) {
+                                    System.out.println(element.getClass());
+                                }
+                            });
+
+                        }
+
+                        @Override
+                        public void visitForeachStatement(PsiForeachStatement statement) {
+                            System.out.println(statement.getClass());
+                        }
+
+                        @Override
+                        public void visitElement(PsiElement element) {
+                            System.out.println(element.getClass());
+                        }
+                    });
+                }
+
+            });
+
+            Collection<PsiParameter> parameterCollection = PsiTreeUtil.findChildrenOfType(method, PsiParameter.class);
+            PsiParameter psiParameter;
+
+            Collection<PsiLocalVariable> localVariables = PsiTreeUtil.findChildrenOfAnyType(method, PsiLocalVariable.class);
+            PsiLocalVariable localVariable;
+//            localVariable.getType();
+
+//            method.acceptChildren(new JavaRecursiveElementVisitor() {
+//                @Override
+//                public void visitElement(PsiElement element) {
+//                    System.out.println(element.getClass());
+//                    super.visitElement(element);
+//                }
+//            });
+        }
+    }
+
+    private void dump(PsiElement psiElement) {
+        if (psiElement.getParent() instanceof PsiReferenceExpression) {
+            dumpReference((PsiReferenceExpression) psiElement.getParent());
+        } else if (psiElement.getParent() instanceof PsiForStatement ||
+                psiElement.getParent() instanceof PsiLambdaExpression ) {
+            psiElement.getParent().acceptChildren(new JavaElementVisitor() {
+                @Override
+                public void visitElement(PsiElement element) {
+                    System.out.println(psiElement.getClass());
+                }
+            });
+        }
     }
 
 
     private void parseElement(AnActionEvent event) {
-        PsiElement psiElement = event.getData(CommonDataKeys.PSI_ELEMENT);
-        if (psiElement != null) {
-            System.out.println(psiElement);
-        }
         PsiJavaFile psiJavaFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
         Caret caret = event.getData(CommonDataKeys.CARET);
 
         PsiElement pe = psiJavaFile.findElementAt(caret.getCaretModel().getOffset());
         if (pe != null) {
-            System.out.println(pe);
-            if (pe instanceof PsiIdentifier) {
-                dump((PsiIdentifier) pe);
-            } else if (pe instanceof PsiWhiteSpace) {
-                dump((PsiWhiteSpace) pe);
-            }
+            dump(pe);
         }
     }
 
