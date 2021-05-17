@@ -8,7 +8,7 @@ import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.util.PsiTreeUtil;
 
 
-public class RepositoryStructureParser {
+public class RepositoryContextParser {
 
     private final AnActionEvent event;
 
@@ -18,7 +18,7 @@ public class RepositoryStructureParser {
 
     private final PsiClass psiClass;
 
-    private RepositoryStructureParser(AnActionEvent event) {
+    private RepositoryContextParser(AnActionEvent event) {
         this.event = event;
         this.caret = event.getData(CommonDataKeys.CARET);
         this.psiJavaFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
@@ -101,24 +101,8 @@ public class RepositoryStructureParser {
         return entityType.resolve();
     }
 
-    public static boolean isEventOccurredInRepositoryFile(AnActionEvent actionEvent) {
-        PsiFile psiFile = actionEvent.getData(CommonDataKeys.PSI_FILE);
-        if (!(psiFile instanceof PsiJavaFile)) {
-            return false;
-        }
-        PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
-        return (psiJavaFile.getName().endsWith("Repository.java") ||
-                psiJavaFile.getName().endsWith("RepositoryImpl.java")) &&
-                psiJavaFile.getClasses().length == 1 &&
-                psiJavaFile.getContainingDirectory().getVirtualFile().getPath().contains("src/main/java") &&
-                psiJavaFile.getPackageName().endsWith(".repository");
-    }
-
-    public static RepositoryStructureParser from(AnActionEvent actionEvent) {
-        if (!isEventOccurredInRepositoryFile(actionEvent)) {
-            throw new IllegalArgumentException("Not a repository file.");
-        }
-        return new RepositoryStructureParser(actionEvent);
+    public static RepositoryContextParser from(AnActionEvent actionEvent) {
+        return new RepositoryContextParser(actionEvent);
     }
 }
 

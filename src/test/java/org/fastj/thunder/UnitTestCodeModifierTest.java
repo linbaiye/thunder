@@ -1,5 +1,6 @@
 package org.fastj.thunder;
 
+import com.intellij.lang.PsiParser;
 import com.intellij.psi.*;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.ProjectScope;
@@ -93,5 +94,12 @@ public class UnitTestCodeModifierTest extends LightJavaCodeInsightFixtureTestCas
         PsiClass modifiedClass = JavaPsiFacade.getInstance(getProject()).findClass("org.fastj.thunder.TestingServiceUT",
                 ProjectScope.getProjectScope(getProject()));
         System.out.println(modifiedClass.getText());
+
+    }
+
+    public void testCreateElement() {
+        PsiElementFactory.getInstance(getProject()).createStatementFromText("HelloTest test = HelloTest.builder().command(test.getCommand())\n" +
+                ".hello()\n" +
+                ".build();", null);
     }
 }

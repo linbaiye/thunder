@@ -3,8 +3,10 @@ package org.fastj.thunder.modifier;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.psi.*;
+import org.fastj.thunder.modifier.builder.BuilderCodeModifier;
+import org.fastj.thunder.modifier.builder.BuilderContextParser;
 import org.fastj.thunder.modifier.persistence.RepositoryCodeModifier;
-import org.fastj.thunder.modifier.persistence.RepositoryStructureParser;
+import org.fastj.thunder.modifier.persistence.RepositoryContextParser;
 import org.fastj.thunder.scope.DefaultScopeMatcher;
 import org.fastj.thunder.scope.Scope;
 
@@ -29,11 +31,12 @@ public class CodeModifierFactory {
             case UNIT_TEST_CLASS:
                 return UnitTestCodeModifier.create(psiJavaFile);
             case REPOSITORY:
-                RepositoryStructureParser parser = RepositoryStructureParser.from(actionEvent);
+                RepositoryContextParser parser = RepositoryContextParser.from(actionEvent);
                 return RepositoryCodeModifier.from(parser.findCurrentMethod(), parser.findEntityClass(),
                         parser.findDaoIdentifierNearFocusedElement(), parser.findDaoField());
             case BUILDER:
-
+                BuilderContextParser builderContextParser = new BuilderContextParser(actionEvent);
+                return Optional.of(new BuilderCodeModifier(builderContextParser));
             default:
                 return Optional.empty();
         }

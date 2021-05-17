@@ -3,14 +3,13 @@ package org.fastj.thunder.modifier.builder;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Caret;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,6 +39,11 @@ public class BuilderContextParser {
         PsiElement psiElement = pe.getParent();
         referenceExpression = (PsiReferenceExpression) psiElement;
         parseBuilderClass(referenceExpression);
+    }
+
+    private void parseBuilderClass(PsiElement psiElement) {
+        if (psiElement instanceof PsiWhiteSpace) {
+        }
     }
 
     private void parseBuilderClass(PsiReferenceExpression referenceExpression) {
@@ -85,6 +89,16 @@ public class BuilderContextParser {
     }
 
 
+    public Editor getEditor() {
+        return anActionEvent.getData(CommonDataKeys.EDITOR);
+    }
+
+
+    public Project getProject() {
+        return anActionEvent.getProject();
+    }
+
+
     private PsiMethod findMethod(PsiElement element) {
         PsiMethod method = (element instanceof PsiMethod) ? (PsiMethod) element :
                 PsiTreeUtil.getParentOfType(element, PsiMethod.class);
@@ -94,30 +108,32 @@ public class BuilderContextParser {
         return method;
     }
 
+
+    private boolean isJreType(PsiType type) {
+        return type.getCanonicalText().startsWith("java") ||
+                type instanceof PsiPrimitiveType ;
+    }
+
     public Map<String, PsiType> parseBuilderSourceParameterCandidates() {
         PsiMethod method = findMethod(referenceExpression);
         if (method == null) {
             return Collections.emptyMap();
         }
-        PsiParameter[] parameters = PsiTreeUtil.getChildrenOfType(method, PsiParameter.class);
-        if (parameters == null) {
-            return Collections.emptyMap();
-        }
+        int expressionOffset = referenceExpression.getTextOffset();
         Map<String, PsiType> result = new HashMap<>();
+        Collection<PsiParameter> parameters = PsiTreeUtil.findChildrenOfType(method, PsiParameter.class);
         for (PsiParameter parameter : parameters) {
-            if (parameter.getType().getCanonicalText().startsWith("java")) {
+            if (isJreType(parameter.getType()) || parameter.getTextOffset() > expressionOffset) {
                 continue;
             }
             result.putIfAbsent(parameter.getName(), parameter.getType());
         }
-        PsiLocalVariable[] variables = PsiTreeUtil.getChildrenOfType(method, PsiLocalVariable.class);
-        if (variables != null) {
-            for (PsiLocalVariable variable : variables) {
-                if (variable.getType().getCanonicalText().startsWith("java")) {
-                    continue;
-                }
-                result.putIfAbsent(variable.getName(), variable.getType());
+        Collection<PsiLocalVariable> variables = PsiTreeUtil.findChildrenOfType(method, PsiLocalVariable.class);
+        for (PsiLocalVariable variable : variables) {
+            if (isJreType(variable.getType()) || variable.getTextOffset() > expressionOffset) {
+                continue;
             }
+            result.putIfAbsent(variable.getName(), variable.getType());
         }
         return result;
     }

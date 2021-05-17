@@ -195,6 +195,6 @@ public class PopupDialogAction extends AnAction {
         LoggerFactory.setProject(event.getProject());
         Optional<? extends CodeModifier> optional = CodeModifierFactory.getInstance().create(event);
         optional.ifPresent(CodeModifier::tryModify);
-        parseElement(event);
+//        parseElement(event);
     }
 }

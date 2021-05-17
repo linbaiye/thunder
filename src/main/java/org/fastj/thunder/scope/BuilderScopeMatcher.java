@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Caret;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiTreeUtil;
 
 public class BuilderScopeMatcher implements ScopeMatcher {
 
@@ -17,12 +18,17 @@ public class BuilderScopeMatcher implements ScopeMatcher {
         if (pe == null) {
             return false;
         }
-        PsiElement psiElement = pe.getParent();
-        if (!(psiElement instanceof PsiReferenceExpression)) {
+        if (pe instanceof PsiWhiteSpace && pe.getPrevSibling() != null) {
+            String text = pe.getPrevSibling().getText();
+            if (text.contains("builder()")) {
+                return true;
+            }
+        }
+        PsiMethodCallExpression callExpression = PsiTreeUtil.getParentOfType(pe, PsiMethodCallExpression.class);
+        if (callExpression == null) {
             return false;
         }
-        PsiReferenceExpression referenceExpression = (PsiReferenceExpression) psiElement;
-        return referenceExpression.getText().contains("builder()");
+        return callExpression.getText().contains("builder()");
     }
 
     @Override
