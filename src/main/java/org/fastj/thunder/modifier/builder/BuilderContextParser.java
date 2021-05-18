@@ -21,7 +21,7 @@ public class BuilderContextParser {
 
     private final PsiJavaFile psiJavaFile;
 
-    private final PsiReferenceExpression referenceExpression;
+    private final PsiElement elementAtCaret;
 
     private PsiClass builder;
 
@@ -34,20 +34,19 @@ public class BuilderContextParser {
         PsiFile psiFile = anActionEvent.getData(CommonDataKeys.PSI_FILE);
         psiJavaFile = (psiFile instanceof PsiJavaFile) ? (PsiJavaFile)  psiFile : null;
         assert psiJavaFile != null;
-        PsiElement pe = psiJavaFile.findElementAt(caret.getCaretModel().getOffset());
-        assert pe != null;
-        PsiElement psiElement = pe.getParent();
-        referenceExpression = (PsiReferenceExpression) psiElement;
-        parseBuilderClass(referenceExpression);
+        elementAtCaret = psiJavaFile.findElementAt(caret.getCaretModel().getOffset());
+        assert elementAtCaret != null;
+        findBuilder(elementAtCaret);
     }
 
-    private void parseBuilderClass(PsiElement psiElement) {
+    private void findBuilder(PsiElement psiElement) {
+        PsiElement statement = psiElement;
         if (psiElement instanceof PsiWhiteSpace) {
+            statement = psiElement.getPrevSibling();
+        } else if (psiElement.getParent() instanceof PsiReferenceExpression) {
+            statement = psiElement.getParent();
         }
-    }
-
-    private void parseBuilderClass(PsiReferenceExpression referenceExpression) {
-        referenceExpression.acceptChildren(new JavaElementVisitor() {
+        statement.acceptChildren(new JavaElementVisitor() {
             @Override
             public void visitMethodCallExpression(PsiMethodCallExpression expression) {
                 PsiMethod psiMethod = expression.resolveMethod();
@@ -58,6 +57,10 @@ public class BuilderContextParser {
                 builder = PsiTypesUtil.getPsiClass(builderType);
             }
         });
+    }
+
+    public PsiElement getElementAtCaret() {
+        return elementAtCaret;
     }
 
     public PsiClass getBuilderClass() {
@@ -115,11 +118,11 @@ public class BuilderContextParser {
     }
 
     public Map<String, PsiType> parseBuilderSourceParameterCandidates() {
-        PsiMethod method = findMethod(referenceExpression);
+        PsiMethod method = findMethod(elementAtCaret);
         if (method == null) {
             return Collections.emptyMap();
         }
-        int expressionOffset = referenceExpression.getTextOffset();
+        int expressionOffset = elementAtCaret.getTextOffset();
         Map<String, PsiType> result = new HashMap<>();
         Collection<PsiParameter> parameters = PsiTreeUtil.findChildrenOfType(method, PsiParameter.class);
         for (PsiParameter parameter : parameters) {

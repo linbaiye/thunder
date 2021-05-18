@@ -1,12 +1,10 @@
 package org.fastj.thunder.modifier.builder;
 
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElementFactory;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.*;
 import org.fastj.thunder.modifier.CodeModifier;
 
 import javax.swing.*;
@@ -40,7 +38,10 @@ public class BuilderCodeModifier implements CodeModifier {
             stringBuilder.append("()\n");
         }
         stringBuilder.append(".build();");
-        PsiElementFactory.getInstance(contextParser.getProject()).createStatementFromText(stringBuilder.toString(), null);
+        PsiElement element = PsiElementFactory.getInstance(contextParser.getProject()).createStatementFromText(stringBuilder.toString(), null);
+        WriteCommandAction.runWriteCommandAction(contextParser.getProject(), "", "", () -> {
+            contextParser.getElementAtCaret().replace(element);
+        });
     }
 
     private void buildPopupMenu() {
@@ -52,9 +53,7 @@ public class BuilderCodeModifier implements CodeModifier {
         if (editor != null) {
             JBPopup jbPopup = JBPopupFactory.getInstance()
                     .createPopupChooserBuilder(new ArrayList<>(parameterCandidates.keySet()))
-                    .setItemChosenCallback(s -> {
-                        System.out.println(s + " was selected.");
-                    })
+                    .setItemChosenCallback(s -> chainBuilderMethods())
                     .setTitle("Choose Source Class")
                     .setMinSize(new Dimension(150, 30))
                     .createPopup();
