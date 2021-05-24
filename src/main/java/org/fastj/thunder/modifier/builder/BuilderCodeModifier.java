@@ -5,7 +5,10 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiClassUtil;
+import com.intellij.psi.util.PsiTypesUtil;
 import org.fastj.thunder.modifier.CodeModifier;
+import org.fastj.thunder.until.NamingUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,9 +27,30 @@ public class BuilderCodeModifier implements CodeModifier {
     }
 
 
-    private void chainBuilderMethods() {
-        PsiClass resultClass = contextParser.getBuilderClass();
+    private String findGetter(String name, PsiClass from, String className) {
+        PsiField field = from.findFieldByName(name, true);
+        if (field != null) {
+            return className + ".get" + NamingUtil.capitalFirstChar(name) + "()";
+        }
+        return null;
+    }
+
+
+    private void chainBuilderMethods(String chosen) {
+        if (!parameterCandidates.containsKey(chosen)) {
+            return;
+        }
+        PsiClass builderClass = contextParser.getBuilderClass();
+        if (builderClass == null || builderClass.getQualifiedName() == null) {
+            return;
+        }
+        PsiClass resultClass = contextParser.parseResultClass();
         if (resultClass == null || resultClass.getQualifiedName() == null) {
+            return;
+        }
+        PsiType type = parameterCandidates.get(chosen);
+        PsiClass sourceClass = PsiTypesUtil.getPsiClass(type);
+        if (sourceClass == null) {
             return;
         }
         StringBuilder stringBuilder = new StringBuilder(resultClass.getQualifiedName());
@@ -35,7 +59,9 @@ public class BuilderCodeModifier implements CodeModifier {
         for (PsiMethod psiMethod : methodList) {
             stringBuilder.append(".");
             stringBuilder.append(psiMethod.getName());
-            stringBuilder.append("()\n");
+            stringBuilder.append("(");
+            String getter = findGetter(psiMethod.getName(), sourceClass, chosen);
+            stringBuilder.append(getter == null ? ")\n" : getter + ")\n");
         }
         stringBuilder.append(".build();");
         PsiElement element = PsiElementFactory.getInstance(contextParser.getProject()).createStatementFromText(stringBuilder.toString(), null);
@@ -53,7 +79,7 @@ public class BuilderCodeModifier implements CodeModifier {
         if (editor != null) {
             JBPopup jbPopup = JBPopupFactory.getInstance()
                     .createPopupChooserBuilder(new ArrayList<>(parameterCandidates.keySet()))
-                    .setItemChosenCallback(s -> chainBuilderMethods())
+                    .setItemChosenCallback(s -> chainBuilderMethods(s))
                     .setTitle("Choose Source Class")
                     .setMinSize(new Dimension(150, 30))
                     .createPopup();

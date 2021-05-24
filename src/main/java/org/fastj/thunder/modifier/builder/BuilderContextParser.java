@@ -43,8 +43,23 @@ public class BuilderContextParser {
         PsiElement statement = psiElement;
         if (psiElement instanceof PsiWhiteSpace) {
             statement = psiElement.getPrevSibling();
+            if (statement instanceof PsiDeclarationStatement) {
+                statement = PsiTreeUtil.findChildOfType(statement, PsiMethodCallExpression.class);
+            }
         } else if (psiElement.getParent() instanceof PsiReferenceExpression) {
             statement = psiElement.getParent();
+        }
+        if (statement == null) {
+            return;
+        }
+        if (statement instanceof PsiMethodCallExpression) {
+            PsiMethod psiMethod = ((PsiMethodCallExpression)statement).resolveMethod();
+            if (psiMethod == null) {
+                return;
+            }
+            builderType = psiMethod.getReturnType();
+            builder = PsiTypesUtil.getPsiClass(builderType);
+            return;
         }
         statement.acceptChildren(new JavaElementVisitor() {
             @Override
