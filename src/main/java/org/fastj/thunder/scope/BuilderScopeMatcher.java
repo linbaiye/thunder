@@ -11,7 +11,9 @@ public class BuilderScopeMatcher implements ScopeMatcher {
 
     private boolean isBuilderScope(PsiWhiteSpace psiWhiteSpace) {
         PsiElement sibling = psiWhiteSpace.getPrevSibling();
-        if (sibling instanceof PsiExpressionStatement || sibling instanceof PsiLocalVariable) {
+        if (sibling instanceof PsiExpressionStatement ||
+            sibling instanceof PsiLocalVariable ||
+                sibling instanceof PsiDeclarationStatement) {
             return sibling.getText().endsWith("builder()");
         }
         return false;

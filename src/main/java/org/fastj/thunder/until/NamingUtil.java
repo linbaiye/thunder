@@ -9,7 +9,7 @@ public final class NamingUtil {
 
     public static String capitalFirstChar(String str) {
         return str.length() > 1 ?
-            str.substring(0, 1).toLowerCase() + str.substring(1) : str;
+            str.substring(0, 1).toUpperCase() + str.substring(1) : str;
     }
 
     public static String nameClass(String className) {

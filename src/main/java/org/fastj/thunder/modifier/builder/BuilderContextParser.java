@@ -25,6 +25,11 @@ public class BuilderContextParser extends AbstractContextParser {
 
     private Map<String, PsiType> sourceParameterCandidates;
 
+    /**
+     * The variable to which the built result will be assigned.
+     */
+    private PsiVariable selfVariable;
+
     public BuilderContextParser(AnActionEvent anActionEvent) {
         super(anActionEvent);
         parseBuilderMethod();
@@ -60,6 +65,7 @@ public class BuilderContextParser extends AbstractContextParser {
             psiElement.acceptChildren(new JavaElementVisitor() {
                 @Override
                 public void visitLocalVariable(PsiLocalVariable variable) {
+                    selfVariable = variable;
                     visitMethodCalling(variable);
                 }
             });
@@ -125,7 +131,7 @@ public class BuilderContextParser extends AbstractContextParser {
         }
         int expressionOffset = elementAtCaret.getTextOffset();
         for (PsiVariable parameter : parameters) {
-            if (parameter.getTextOffset() > expressionOffset) {
+            if (parameter == selfVariable || parameter.getTextOffset() > expressionOffset) {
                 continue;
             }
             sourceParameterCandidates.putIfAbsent(parameter.getName(), parameter.getType());
