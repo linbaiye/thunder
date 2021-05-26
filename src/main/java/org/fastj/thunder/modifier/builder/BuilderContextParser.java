@@ -1,81 +1,89 @@
 package org.fastj.thunder.modifier.builder;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.editor.Caret;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
+import org.fastj.thunder.modifier.AbstractContextParser;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class BuilderContextParser {
-
-    private final AnActionEvent anActionEvent;
-
-    private final Caret caret;
-
-    private final PsiJavaFile psiJavaFile;
-
-    private final PsiElement elementAtCaret;
+public class BuilderContextParser extends AbstractContextParser {
 
     private PsiClass builder;
 
     private PsiType builderType;
 
+    // XXX.builder()
+    private PsiMethod buildingMethod;
+
+    private PsiClass resultClass;
+
+    private PsiMethodCallExpression methodCallExpression;
+
+    private Map<String, PsiType> sourceParameterCandidates;
+
     public BuilderContextParser(AnActionEvent anActionEvent) {
-        this.anActionEvent = anActionEvent;
-        caret = anActionEvent.getData(CommonDataKeys.CARET);
-        assert caret != null;
-        PsiFile psiFile = anActionEvent.getData(CommonDataKeys.PSI_FILE);
-        psiJavaFile = (psiFile instanceof PsiJavaFile) ? (PsiJavaFile)  psiFile : null;
-        assert psiJavaFile != null;
-        elementAtCaret = psiJavaFile.findElementAt(caret.getCaretModel().getOffset());
-        assert elementAtCaret != null;
-        findBuilder(elementAtCaret);
+        super(anActionEvent);
+        parseBuilderMethod();
+        parseResultClass();
+        parseBuilderSourceParameterCandidates();
     }
 
-    private void findBuilder(PsiElement psiElement) {
-        PsiElement statement = psiElement;
-        if (psiElement instanceof PsiWhiteSpace) {
-            statement = psiElement.getPrevSibling();
-            if (statement instanceof PsiDeclarationStatement) {
-                statement = PsiTreeUtil.findChildOfType(statement, PsiMethodCallExpression.class);
-            }
-        } else if (psiElement.getParent() instanceof PsiReferenceExpression) {
-            statement = psiElement.getParent();
-        }
-        if (statement == null) {
-            return;
-        }
-        if (statement instanceof PsiMethodCallExpression) {
-            PsiMethod psiMethod = ((PsiMethodCallExpression)statement).resolveMethod();
-            if (psiMethod == null) {
-                return;
-            }
-            builderType = psiMethod.getReturnType();
-            builder = PsiTypesUtil.getPsiClass(builderType);
-            return;
-        }
-        statement.acceptChildren(new JavaElementVisitor() {
+    private void visitMethodCalling(PsiElement psiElement) {
+        psiElement.acceptChildren(new JavaElementVisitor() {
             @Override
             public void visitMethodCallExpression(PsiMethodCallExpression expression) {
-                PsiMethod psiMethod = expression.resolveMethod();
-                if (psiMethod == null) {
-                    return;
-                }
-                builderType = psiMethod.getReturnType();
-                builder = PsiTypesUtil.getPsiClass(builderType);
+                methodCallExpression = expression;
+                buildingMethod = expression.resolveMethod();
             }
         });
     }
 
-    public PsiElement getElementAtCaret() {
-        return elementAtCaret;
+    private void parseResultClass() {
+        if (builder != null) {
+            PsiMethod[] methods = builder.findMethodsByName("build", false);
+            if (methods.length == 1) {
+                PsiType psiType = methods[0].getReturnType();
+                resultClass = PsiTypesUtil.getPsiClass(psiType);
+            }
+        }
+    }
+
+    private void parseWhenWhitespace(PsiWhiteSpace whiteSpace) {
+        PsiElement psiElement = whiteSpace.getPrevSibling();
+        if (psiElement instanceof PsiExpressionStatement) {
+            visitMethodCalling(psiElement);
+        } else if (psiElement instanceof PsiDeclarationStatement) {
+            psiElement.acceptChildren(new JavaElementVisitor() {
+                @Override
+                public void visitLocalVariable(PsiLocalVariable variable) {
+                    visitMethodCalling(variable);
+                }
+            });
+        }
+    }
+
+    private void parseWhenIdentifier(PsiIdentifier psiIdentifier) {
+        PsiMethodCallExpression methodCallExpression =
+                PsiTreeUtil.getParentOfType(psiIdentifier, PsiMethodCallExpression.class);
+        if (methodCallExpression != null) {
+            buildingMethod = methodCallExpression.resolveMethod();
+        }
+    }
+
+    private void parseBuilderMethod() {
+        if (elementAtCaret instanceof PsiWhiteSpace) {
+            parseWhenWhitespace((PsiWhiteSpace)elementAtCaret);
+        } else if (elementAtCaret instanceof PsiIdentifier) {
+            parseWhenIdentifier((PsiIdentifier) elementAtCaret);
+        }
+        if (buildingMethod != null) {
+            builderType = buildingMethod.getReturnType();
+            builder = PsiTypesUtil.getPsiClass(builderType);
+        }
     }
 
     public PsiClass getBuilderClass() {
@@ -86,16 +94,8 @@ public class BuilderContextParser {
      * Gets the class the builder builds.
      * @return the result class.
      */
-    public PsiClass parseResultClass() {
-        if (builder == null) {
-            return null;
-        }
-        PsiMethod[] methods = builder.findMethodsByName("build", false);
-        if (methods.length != 1) {
-            return null;
-        }
-        PsiType psiType = methods[0].getReturnType();
-        return PsiTypesUtil.getPsiClass(psiType);
+    public PsiClass getResultClass() {
+        return resultClass;
     }
 
     public List<PsiMethod> parseChainMethods() {
@@ -106,17 +106,6 @@ public class BuilderContextParser {
         return Stream.of(methods).filter(e -> builderType.equals(e.getReturnType())).collect(Collectors.toList());
     }
 
-
-    public Editor getEditor() {
-        return anActionEvent.getData(CommonDataKeys.EDITOR);
-    }
-
-
-    public Project getProject() {
-        return anActionEvent.getProject();
-    }
-
-
     private PsiMethod findMethod(PsiElement element) {
         PsiMethod method = (element instanceof PsiMethod) ? (PsiMethod) element :
                 PsiTreeUtil.getParentOfType(element, PsiMethod.class);
@@ -126,33 +115,37 @@ public class BuilderContextParser {
         return method;
     }
 
-
-    private boolean isJreType(PsiType type) {
-        return type.getCanonicalText().startsWith("java") ||
-                type instanceof PsiPrimitiveType ;
+    public Map<String, PsiType> getSourceParameterCandidates() {
+        return sourceParameterCandidates;
     }
 
-    public Map<String, PsiType> parseBuilderSourceParameterCandidates() {
-        PsiMethod method = findMethod(elementAtCaret);
-        if (method == null) {
-            return Collections.emptyMap();
+    private void addToCandidates(Collection<? extends PsiVariable> parameters) {
+        if (parameters == null) {
+            return;
         }
         int expressionOffset = elementAtCaret.getTextOffset();
-        Map<String, PsiType> result = new HashMap<>();
+        for (PsiVariable parameter : parameters) {
+            if (parameter.getTextOffset() > expressionOffset) {
+                continue;
+            }
+            sourceParameterCandidates.putIfAbsent(parameter.getName(), parameter.getType());
+        }
+    }
+
+    public PsiMethodCallExpression getMethodCallExpression() {
+        return methodCallExpression;
+    }
+
+    public void parseBuilderSourceParameterCandidates() {
+        PsiMethod method = findMethod(elementAtCaret);
+        if (method == null) {
+            sourceParameterCandidates = Collections.emptyMap();
+            return;
+        }
+        sourceParameterCandidates = new HashMap<>();
         Collection<PsiParameter> parameters = PsiTreeUtil.findChildrenOfType(method, PsiParameter.class);
-        for (PsiParameter parameter : parameters) {
-            if (isJreType(parameter.getType()) || parameter.getTextOffset() > expressionOffset) {
-                continue;
-            }
-            result.putIfAbsent(parameter.getName(), parameter.getType());
-        }
+        addToCandidates(parameters);
         Collection<PsiLocalVariable> variables = PsiTreeUtil.findChildrenOfType(method, PsiLocalVariable.class);
-        for (PsiLocalVariable variable : variables) {
-            if (isJreType(variable.getType()) || variable.getTextOffset() > expressionOffset) {
-                continue;
-            }
-            result.putIfAbsent(variable.getName(), variable.getType());
-        }
-        return result;
+        addToCandidates(variables);
     }
 }

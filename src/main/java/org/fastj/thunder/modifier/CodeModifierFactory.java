@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.psi.*;
 import org.fastj.thunder.modifier.builder.BuilderCodeModifier;
 import org.fastj.thunder.modifier.builder.BuilderContextParser;
+import org.fastj.thunder.modifier.builder.SimpleParameterSelector;
 import org.fastj.thunder.modifier.persistence.RepositoryCodeModifier;
 import org.fastj.thunder.modifier.persistence.RepositoryContextParser;
 import org.fastj.thunder.scope.DefaultScopeMatcher;
@@ -36,7 +37,8 @@ public class CodeModifierFactory {
                         parser.findDaoIdentifierNearFocusedElement(), parser.findDaoField());
             case BUILDER:
                 BuilderContextParser builderContextParser = new BuilderContextParser(actionEvent);
-                return Optional.of(new BuilderCodeModifier(builderContextParser));
+                return Optional.of(new BuilderCodeModifier(builderContextParser,
+                        new SimpleParameterSelector(builderContextParser.getSourceParameterCandidates())));
             default:
                 return Optional.empty();
         }

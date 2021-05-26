@@ -8,6 +8,20 @@ import com.intellij.psi.util.PsiTreeUtil;
 
 public class BuilderScopeMatcher implements ScopeMatcher {
 
+
+    private boolean isBuilderScope(PsiWhiteSpace psiWhiteSpace) {
+        PsiElement sibling = psiWhiteSpace.getPrevSibling();
+        if (sibling instanceof PsiExpressionStatement || sibling instanceof PsiLocalVariable) {
+            return sibling.getText().endsWith("builder()");
+        }
+        return false;
+    }
+
+    private boolean isBuilderScope(PsiIdentifier identifier) {
+        PsiMethodCallExpression callExpression = PsiTreeUtil.getParentOfType(identifier, PsiMethodCallExpression.class);
+        return callExpression != null && callExpression.getText().contains("builder()");
+    }
+
     private boolean isBuilderScope(AnActionEvent actionEvent) {
         PsiJavaFile psiJavaFile = (PsiJavaFile) actionEvent.getData(CommonDataKeys.PSI_FILE);
         Caret caret = actionEvent.getData(CommonDataKeys.CARET);
@@ -18,17 +32,12 @@ public class BuilderScopeMatcher implements ScopeMatcher {
         if (pe == null) {
             return false;
         }
-        if (pe instanceof PsiWhiteSpace && pe.getPrevSibling() != null) {
-            String text = pe.getPrevSibling().getText();
-            if (text.contains("builder()")) {
-                return true;
-            }
+        if (pe instanceof PsiWhiteSpace) {
+            return isBuilderScope((PsiWhiteSpace)pe);
+        } else if (pe instanceof PsiIdentifier) {
+            return isBuilderScope((PsiIdentifier)pe);
         }
-        PsiMethodCallExpression callExpression = PsiTreeUtil.getParentOfType(pe, PsiMethodCallExpression.class);
-        if (callExpression == null) {
-            return false;
-        }
-        return callExpression.getText().contains("builder()");
+        return false;
     }
 
     @Override
