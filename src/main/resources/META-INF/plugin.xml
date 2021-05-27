@@ -9,6 +9,14 @@
 
     <depends>com.intellij.modules.platform</depends>
 
+        <extensions defaultExtensionNs="com.intellij">
+            <completion.contributor
+            implementationClass="org.fastj.thunder.completion.ThunderCompletionContributor"
+            language="JAVA"
+            />
+
+        </extensions>
+
 <!--    <extensions defaultExtensionNs="com.intellij">-->
 <!--        <toolWindow id="thunder"-->
 <!--                    secondary="false"-->

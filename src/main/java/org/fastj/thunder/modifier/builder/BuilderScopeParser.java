@@ -64,34 +64,39 @@ public class BuilderScopeParser extends AbstractScopeParser {
         }
     }
 
-    private void parseSibling(PsiElement psiElement) {
-        if (psiElement instanceof PsiExpressionStatement ||
-                psiElement instanceof PsiLambdaExpression) {
-            visitMethodCalling(psiElement);
-        } else if (psiElement instanceof PsiDeclarationStatement) {
-            psiElement.acceptChildren(new JavaElementVisitor() {
+    private void parseSibling(PsiElement prevSibling) {
+        if (prevSibling instanceof PsiExpressionStatement ||
+                prevSibling instanceof PsiLambdaExpression ||
+                prevSibling instanceof PsiReturnStatement) {
+            visitMethodCalling(prevSibling);
+        } else if (prevSibling instanceof PsiDeclarationStatement) {
+            prevSibling.acceptChildren(new JavaElementVisitor() {
                 @Override
                 public void visitLocalVariable(PsiLocalVariable variable) {
                     selfVariable = variable;
                     visitMethodCalling(variable);
                 }
             });
-        }
-    }
-
-    private void parseWhenIdentifier(PsiIdentifier psiIdentifier) {
-        PsiMethodCallExpression methodCallExpression =
-                PsiTreeUtil.getParentOfType(psiIdentifier, PsiMethodCallExpression.class);
-        if (methodCallExpression != null) {
+        } else if (prevSibling instanceof PsiMethodCallExpression) {
+            methodCallExpression = (PsiMethodCallExpression) prevSibling;
             buildingMethod = methodCallExpression.resolveMethod();
         }
     }
 
+    private void parseWhenIdentifier(PsiIdentifier psiIdentifier) {
+        PsiMethodCallExpression callExpression =
+                PsiTreeUtil.getParentOfType(psiIdentifier, PsiMethodCallExpression.class);
+        if (callExpression != null) {
+            this.methodCallExpression = callExpression;
+            buildingMethod = callExpression.resolveMethod();
+        }
+    }
+
     private void parseBuilderMethod() {
-        if (thunderEvent.getElementAtCaret()instanceof PsiIdentifier) {
-            parseWhenIdentifier((PsiIdentifier) thunderEvent.getElementAtCaret());
+        if (thunderEvent.getElementBeforeCaret()instanceof PsiIdentifier) {
+            parseWhenIdentifier((PsiIdentifier) thunderEvent.getElementBeforeCaret());
         } else {
-            parseSibling(thunderEvent.getElementAtCaret().getPrevSibling());
+            parseSibling(thunderEvent.getElementBeforeCaret().getPrevSibling());
         }
         if (buildingMethod != null) {
             builderType = buildingMethod.getReturnType();
@@ -136,7 +141,7 @@ public class BuilderScopeParser extends AbstractScopeParser {
         if (parameters == null) {
             return;
         }
-        int expressionOffset = thunderEvent.getElementAtCaret().getTextOffset();
+        int expressionOffset = thunderEvent.getElementBeforeCaret().getTextOffset();
         for (PsiVariable parameter : parameters) {
             if (selfVariable == parameter || parameter.getTextOffset() > expressionOffset) {
                 continue;
@@ -155,7 +160,7 @@ public class BuilderScopeParser extends AbstractScopeParser {
     }
 
     public void parseBuilderSourceParameterCandidates() {
-        PsiMethod method = findMethod(thunderEvent.getElementAtCaret());
+        PsiMethod method = findMethod(thunderEvent.getElementBeforeCaret());
         if (method == null) {
             sourceParameterCandidates = Collections.emptyMap();
             return;
@@ -176,6 +181,6 @@ public class BuilderScopeParser extends AbstractScopeParser {
     }
 
     public PsiElement getElementAtCaret() {
-        return thunderEvent.getElementAtCaret();
+        return thunderEvent.getElementBeforeCaret();
     }
 }

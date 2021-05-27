@@ -15,7 +15,9 @@ public class BuilderScopeMatcher extends AbstractScopeMatcher {
         PsiElement sibling = element.getPrevSibling();
         if (sibling instanceof PsiExpressionStatement ||
                 sibling instanceof PsiLocalVariable ||
-                sibling instanceof PsiDeclarationStatement ) {
+                sibling instanceof PsiDeclarationStatement ||
+                sibling instanceof PsiMethodCallExpression ||
+                sibling instanceof PsiReturnStatement) {
             return sibling.getText().endsWith(".builder()");
         }
         AtomicReference<Boolean> reference = new AtomicReference<>(false);
@@ -36,7 +38,7 @@ public class BuilderScopeMatcher extends AbstractScopeMatcher {
     }
 
     private boolean isBuilderScope(ThunderEvent thunderEvent) {
-        PsiElement pe = thunderEvent.getElementAtCaret();
+        PsiElement pe = thunderEvent.getElementBeforeCaret();
         if (pe == null) {
             return false;
         }

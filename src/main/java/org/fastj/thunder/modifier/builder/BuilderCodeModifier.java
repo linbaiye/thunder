@@ -46,9 +46,12 @@ public class BuilderCodeModifier implements CodeModifier {
         if (resultClass == null || resultClass.getQualifiedName() == null) {
             return;
         }
-        StringBuilder stringBuilder = new StringBuilder(resultClass.getQualifiedName());
-        stringBuilder.append(".builder()");
         List<PsiMethod> methodList = contextParser.parseChainMethods();
+        if (methodList.isEmpty()) {
+            return;
+        }
+        StringBuilder stringBuilder = new StringBuilder(resultClass.getQualifiedName());
+        stringBuilder.append(".builder()\n");
         for (PsiMethod psiMethod : methodList) {
             String expression = parameterSelector.selectParameterExpression(psiMethod.getName());
             if (expression == null) {
@@ -86,7 +89,7 @@ public class BuilderCodeModifier implements CodeModifier {
             return;
         }
         StringBuilder stringBuilder = new StringBuilder(resultClass.getQualifiedName());
-        stringBuilder.append(".builder()");
+        stringBuilder.append(".builder()\n");
         List<PsiMethod> methodList = contextParser.parseChainMethods();
         for (PsiMethod psiMethod : methodList) {
             String param = findGetter(psiMethod.getName(), sourceClass, chosen);

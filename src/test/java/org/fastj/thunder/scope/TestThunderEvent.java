@@ -15,7 +15,7 @@ public class TestThunderEvent implements ThunderEvent {
     }
 
     @Override
-    public PsiElement getElementAtCaret() {
+    public PsiElement getElementBeforeCaret() {
         return getFile().findElementAt(getCaretOffset());
     }
 
