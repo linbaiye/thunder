@@ -1,15 +1,16 @@
 package org.fastj.thunder.scope;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 
-public class UnitTestClassScopeMatcher implements ScopeMatcher {
+public class UnitTestClassScopeMatcher extends AbstractScopeMatcher {
 
+    public UnitTestClassScopeMatcher(ScopeMatcher next) {
+        super(next);
+    }
 
-    private boolean isUnitTest(AnActionEvent actionEvent) {
-        PsiFile psiFile = actionEvent.getData(CommonDataKeys.PSI_FILE);
+    private boolean isUnitTest(ThunderEvent thunderEvent) {
+        PsiFile psiFile = thunderEvent.getFile();
         if (!(psiFile instanceof PsiJavaFile)) {
             return false;
         }
@@ -19,12 +20,8 @@ public class UnitTestClassScopeMatcher implements ScopeMatcher {
                 psiJavaFile.getContainingDirectory().getVirtualFile().getPath().contains("src/test/java");
     }
 
-
     @Override
-    public Scope match(AnActionEvent actionEvent) {
-        if (isUnitTest(actionEvent)) {
-            return Scope.UNIT_TEST_CLASS;
-        }
-        return ScopeFinderRegistry.getInstance().getScopeFinder(Scope.REPOSITORY).match(actionEvent);
+    protected ScopeType doMatch(ThunderEvent thunderEvent) {
+        return isUnitTest(thunderEvent) ? ScopeType.UNIT_TEST_CLASS : null;
     }
 }

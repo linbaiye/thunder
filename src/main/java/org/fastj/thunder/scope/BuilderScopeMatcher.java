@@ -1,51 +1,54 @@
 package org.fastj.thunder.scope;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.editor.Caret;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 
-public class BuilderScopeMatcher implements ScopeMatcher {
+import java.util.concurrent.atomic.AtomicReference;
 
+public class BuilderScopeMatcher extends AbstractScopeMatcher {
 
-    private boolean isBuilderScope(PsiWhiteSpace psiWhiteSpace) {
-        PsiElement sibling = psiWhiteSpace.getPrevSibling();
-        if (sibling instanceof PsiExpressionStatement || sibling instanceof PsiLocalVariable) {
-            return sibling.getText().endsWith("builder()");
+    public BuilderScopeMatcher(ScopeMatcher next) {
+        super(next);
+    }
+
+    private boolean isBuilderScope(PsiElement element) {
+        PsiElement sibling = element.getPrevSibling();
+        if (sibling instanceof PsiExpressionStatement ||
+                sibling instanceof PsiLocalVariable ||
+                sibling instanceof PsiDeclarationStatement ) {
+            return sibling.getText().endsWith(".builder()");
         }
-        return false;
+        AtomicReference<Boolean> reference = new AtomicReference<>(false);
+        if (sibling instanceof PsiLambdaExpression) {
+            sibling.acceptChildren(new JavaElementVisitor() {
+                @Override
+                public void visitMethodCallExpression(PsiMethodCallExpression expression) {
+                    reference.set(expression.getText().contains(".builder()"));
+                }
+            });
+        }
+        return reference.get();
     }
 
     private boolean isBuilderScope(PsiIdentifier identifier) {
         PsiMethodCallExpression callExpression = PsiTreeUtil.getParentOfType(identifier, PsiMethodCallExpression.class);
-        return callExpression != null && callExpression.getText().contains("builder()");
+        return callExpression != null && callExpression.getText().contains(".builder()");
     }
 
-    private boolean isBuilderScope(AnActionEvent actionEvent) {
-        PsiJavaFile psiJavaFile = (PsiJavaFile) actionEvent.getData(CommonDataKeys.PSI_FILE);
-        Caret caret = actionEvent.getData(CommonDataKeys.CARET);
-        if (caret == null || psiJavaFile == null) {
-            return false;
-        }
-        PsiElement pe = psiJavaFile.findElementAt(caret.getCaretModel().getOffset());
+    private boolean isBuilderScope(ThunderEvent thunderEvent) {
+        PsiElement pe = thunderEvent.getElementAtCaret();
         if (pe == null) {
             return false;
         }
-        if (pe instanceof PsiWhiteSpace) {
-            return isBuilderScope((PsiWhiteSpace)pe);
-        } else if (pe instanceof PsiIdentifier) {
+        if (pe instanceof PsiIdentifier) {
             return isBuilderScope((PsiIdentifier)pe);
+        } else {
+            return isBuilderScope(pe);
         }
-        return false;
     }
 
     @Override
-    public Scope match(AnActionEvent actionEvent) {
-        if (isBuilderScope(actionEvent)) {
-            return Scope.BUILDER;
-        }
-        return Scope.UNKNOWN;
+    protected ScopeType doMatch(ThunderEvent thunderEvent) {
+        return isBuilderScope(thunderEvent) ? ScopeType.BUILDER : null;
     }
-
 }

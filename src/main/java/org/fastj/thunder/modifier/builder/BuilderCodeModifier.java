@@ -17,13 +17,13 @@ import java.util.Map;
 
 public class BuilderCodeModifier implements CodeModifier {
 
-    private final BuilderContextParser contextParser;
+    private final BuilderScopeParser contextParser;
 
     private final ParameterSelector parameterSelector;
 
     private Map<String, PsiType> parameterCandidates;
 
-    public BuilderCodeModifier(BuilderContextParser contextParser,
+    public BuilderCodeModifier(BuilderScopeParser contextParser,
                                ParameterSelector parameterSelector) {
         this.contextParser = contextParser;
         this.parameterSelector = parameterSelector;
@@ -38,6 +38,10 @@ public class BuilderCodeModifier implements CodeModifier {
     }
 
     private void chainBuilderMethods() {
+        PsiMethodCallExpression methodCallExpression = contextParser.getMethodCallExpression();
+        if (methodCallExpression == null) {
+            return;
+        }
         PsiClass resultClass = contextParser.getResultClass();
         if (resultClass == null || resultClass.getQualifiedName() == null) {
             return;
@@ -56,10 +60,10 @@ public class BuilderCodeModifier implements CodeModifier {
             stringBuilder.append(expression);
             stringBuilder.append(")\n");
         }
-        stringBuilder.append(".build();");
+        stringBuilder.append(contextParser.isBuilderMethodContainedInLambda() ? ".build()": ".build();");
         PsiElement element = PsiElementFactory.getInstance(contextParser.getProject()).createStatementFromText(stringBuilder.toString(), null);
         WriteCommandAction.runWriteCommandAction(contextParser.getProject(), "", "", () -> {
-            contextParser.getMethodCallExpression().replace(element);
+            methodCallExpression.replace(element);
         });
     }
 

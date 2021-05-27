@@ -1,15 +1,16 @@
 package org.fastj.thunder.modifier;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiJavaFile;
 import org.fastj.thunder.modifier.builder.BuilderCodeModifier;
-import org.fastj.thunder.modifier.builder.BuilderContextParser;
+import org.fastj.thunder.modifier.builder.BuilderScopeParser;
 import org.fastj.thunder.modifier.builder.SimpleParameterSelector;
 import org.fastj.thunder.modifier.persistence.RepositoryCodeModifier;
 import org.fastj.thunder.modifier.persistence.RepositoryContextParser;
-import org.fastj.thunder.scope.DefaultScopeMatcher;
-import org.fastj.thunder.scope.Scope;
+import org.fastj.thunder.scope.ScopeMatcher;
+import org.fastj.thunder.scope.ScopeMatcherFactory;
+import org.fastj.thunder.scope.ScopeType;
+import org.fastj.thunder.scope.ThunderEvent;
 
 import java.util.Optional;
 
@@ -21,22 +22,23 @@ public class CodeModifierFactory {
         return CODE_MODIFIER_FACTORY;
     }
 
-    public Optional<? extends CodeModifier> create(AnActionEvent actionEvent) {
-        PsiFile psiFile = actionEvent.getData(CommonDataKeys.PSI_FILE);
+    public Optional<? extends CodeModifier> create(ThunderEvent thunderEvent) {
+        PsiFile psiFile = thunderEvent.getFile();
         if (!(psiFile instanceof PsiJavaFile)) {
             return Optional.empty();
         }
         PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
-        Scope scope = new DefaultScopeMatcher().match(actionEvent);
-        switch (scope) {
+        ScopeMatcher scopeMatcher = ScopeMatcherFactory.getInstance().getOrCreate();
+        ScopeType scopeType = scopeMatcher.match(thunderEvent);
+        switch (scopeType) {
             case UNIT_TEST_CLASS:
                 return UnitTestCodeModifier.create(psiJavaFile);
             case REPOSITORY:
-                RepositoryContextParser parser = RepositoryContextParser.from(actionEvent);
+                RepositoryContextParser parser = new RepositoryContextParser(thunderEvent);
                 return RepositoryCodeModifier.from(parser.findCurrentMethod(), parser.findEntityClass(),
                         parser.findDaoIdentifierNearFocusedElement(), parser.findDaoField());
             case BUILDER:
-                BuilderContextParser builderContextParser = new BuilderContextParser(actionEvent);
+                BuilderScopeParser builderContextParser = new BuilderScopeParser(thunderEvent);
                 return Optional.of(new BuilderCodeModifier(builderContextParser,
                         new SimpleParameterSelector(builderContextParser.getSourceParameterCandidates())));
             default:
