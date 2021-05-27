@@ -1,16 +1,18 @@
 package org.fastj.thunder.modifier.builder;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
-import org.fastj.thunder.modifier.AbstractContextParser;
+import org.fastj.thunder.modifier.AbstractScopeParser;
+import org.fastj.thunder.scope.ThunderEvent;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class BuilderContextParser extends AbstractContextParser {
+public class BuilderScopeParser extends AbstractScopeParser {
 
     private PsiClass builder;
 
@@ -23,15 +25,20 @@ public class BuilderContextParser extends AbstractContextParser {
 
     private PsiMethodCallExpression methodCallExpression;
 
-    private Map<String, PsiType> sourceParameterCandidates;
+    /**
+     * The variable to which the built object is assigned.
+     */
+    private PsiLocalVariable selfVariable;
 
     /**
-     * The variable to which the built result will be assigned.
+     * Parameters, variables that can provide the builder
+     * methods with candidates.
      */
-    private PsiVariable selfVariable;
+    private Map<String, PsiType> sourceParameterCandidates;
 
-    public BuilderContextParser(AnActionEvent anActionEvent) {
-        super(anActionEvent);
+
+    public BuilderScopeParser(ThunderEvent thunderEvent) {
+        super(thunderEvent);
         parseBuilderMethod();
         parseResultClass();
         parseBuilderSourceParameterCandidates();
@@ -57,34 +64,39 @@ public class BuilderContextParser extends AbstractContextParser {
         }
     }
 
-    private void parseWhenWhitespace(PsiWhiteSpace whiteSpace) {
-        PsiElement psiElement = whiteSpace.getPrevSibling();
-        if (psiElement instanceof PsiExpressionStatement) {
-            visitMethodCalling(psiElement);
-        } else if (psiElement instanceof PsiDeclarationStatement) {
-            psiElement.acceptChildren(new JavaElementVisitor() {
+    private void parseSibling(PsiElement prevSibling) {
+        if (prevSibling instanceof PsiExpressionStatement ||
+                prevSibling instanceof PsiLambdaExpression ||
+                prevSibling instanceof PsiReturnStatement) {
+            visitMethodCalling(prevSibling);
+        } else if (prevSibling instanceof PsiDeclarationStatement) {
+            prevSibling.acceptChildren(new JavaElementVisitor() {
                 @Override
                 public void visitLocalVariable(PsiLocalVariable variable) {
                     selfVariable = variable;
                     visitMethodCalling(variable);
                 }
             });
-        }
-    }
-
-    private void parseWhenIdentifier(PsiIdentifier psiIdentifier) {
-        PsiMethodCallExpression methodCallExpression =
-                PsiTreeUtil.getParentOfType(psiIdentifier, PsiMethodCallExpression.class);
-        if (methodCallExpression != null) {
+        } else if (prevSibling instanceof PsiMethodCallExpression) {
+            methodCallExpression = (PsiMethodCallExpression) prevSibling;
             buildingMethod = methodCallExpression.resolveMethod();
         }
     }
 
+    private void parseWhenIdentifier(PsiIdentifier psiIdentifier) {
+        PsiMethodCallExpression callExpression =
+                PsiTreeUtil.getParentOfType(psiIdentifier, PsiMethodCallExpression.class);
+        if (callExpression != null) {
+            this.methodCallExpression = callExpression;
+            buildingMethod = callExpression.resolveMethod();
+        }
+    }
+
     private void parseBuilderMethod() {
-        if (elementAtCaret instanceof PsiWhiteSpace) {
-            parseWhenWhitespace((PsiWhiteSpace)elementAtCaret);
-        } else if (elementAtCaret instanceof PsiIdentifier) {
-            parseWhenIdentifier((PsiIdentifier) elementAtCaret);
+        if (thunderEvent.getElementBeforeCaret()instanceof PsiIdentifier) {
+            parseWhenIdentifier((PsiIdentifier) thunderEvent.getElementBeforeCaret());
+        } else {
+            parseSibling(thunderEvent.getElementBeforeCaret().getPrevSibling());
         }
         if (buildingMethod != null) {
             builderType = buildingMethod.getReturnType();
@@ -129,9 +141,9 @@ public class BuilderContextParser extends AbstractContextParser {
         if (parameters == null) {
             return;
         }
-        int expressionOffset = elementAtCaret.getTextOffset();
+        int expressionOffset = thunderEvent.getElementBeforeCaret().getTextOffset();
         for (PsiVariable parameter : parameters) {
-            if (parameter == selfVariable || parameter.getTextOffset() > expressionOffset) {
+            if (selfVariable == parameter || parameter.getTextOffset() > expressionOffset) {
                 continue;
             }
             sourceParameterCandidates.putIfAbsent(parameter.getName(), parameter.getType());
@@ -142,8 +154,13 @@ public class BuilderContextParser extends AbstractContextParser {
         return methodCallExpression;
     }
 
+    public boolean isBuilderMethodContainedInLambda() {
+        return methodCallExpression != null &&
+                methodCallExpression.getParent() instanceof PsiLambdaExpression;
+    }
+
     public void parseBuilderSourceParameterCandidates() {
-        PsiMethod method = findMethod(elementAtCaret);
+        PsiMethod method = findMethod(thunderEvent.getElementBeforeCaret());
         if (method == null) {
             sourceParameterCandidates = Collections.emptyMap();
             return;
@@ -153,5 +170,17 @@ public class BuilderContextParser extends AbstractContextParser {
         addToCandidates(parameters);
         Collection<PsiLocalVariable> variables = PsiTreeUtil.findChildrenOfType(method, PsiLocalVariable.class);
         addToCandidates(variables);
+    }
+
+    public Project getProject() {
+        return thunderEvent.getProject();
+    }
+
+    public Editor getEditor() {
+        return thunderEvent.getEditor();
+    }
+
+    public PsiElement getElementAtCaret() {
+        return thunderEvent.getElementBeforeCaret();
     }
 }

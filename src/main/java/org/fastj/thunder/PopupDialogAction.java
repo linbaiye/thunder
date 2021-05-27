@@ -9,13 +9,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.psi.*;
-import com.intellij.psi.impl.source.PsiClassReferenceType;
-import com.intellij.psi.util.PsiClassUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
 import org.fastj.thunder.logging.LoggerFactory;
 import org.fastj.thunder.modifier.CodeModifier;
 import org.fastj.thunder.modifier.CodeModifierFactory;
+import org.fastj.thunder.scope.ActionThunderEvent;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -193,7 +192,7 @@ public class PopupDialogAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         LoggerFactory.setProject(event.getProject());
-        Optional<? extends CodeModifier> optional = CodeModifierFactory.getInstance().create(event);
+        Optional<? extends CodeModifier> optional = CodeModifierFactory.getInstance().create(new ActionThunderEvent(event));
         optional.ifPresent(CodeModifier::tryModify);
 //        parseElement(event);
     }

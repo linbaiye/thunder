@@ -94,7 +94,6 @@ public class UnitTestCodeModifierTest extends LightJavaCodeInsightFixtureTestCas
         PsiClass modifiedClass = JavaPsiFacade.getInstance(getProject()).findClass("org.fastj.thunder.TestingServiceUT",
                 ProjectScope.getProjectScope(getProject()));
         System.out.println(modifiedClass.getText());
-
     }
 
     public void testCreateElement() {

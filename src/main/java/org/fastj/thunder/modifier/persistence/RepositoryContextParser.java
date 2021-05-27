@@ -1,28 +1,21 @@
 package org.fastj.thunder.modifier.persistence;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.editor.Caret;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.util.PsiTreeUtil;
+import org.fastj.thunder.scope.ThunderEvent;
 
 
 public class RepositoryContextParser {
 
-    private final AnActionEvent event;
-
-    private final Caret caret;
-
-    private final PsiJavaFile psiJavaFile;
+    private final ThunderEvent thunderEvent;
 
     private final PsiClass psiClass;
 
-    private RepositoryContextParser(AnActionEvent event) {
-        this.event = event;
-        this.caret = event.getData(CommonDataKeys.CARET);
-        this.psiJavaFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
-        this.psiClass = this.psiJavaFile.getClasses()[0];
+    public RepositoryContextParser(ThunderEvent thunderEvent) {
+        this.thunderEvent = thunderEvent;
+        PsiJavaFile psiJavaFile = (PsiJavaFile)thunderEvent.getFile();
+        psiClass = psiJavaFile.getClasses()[0];
     }
 
     /**
@@ -30,18 +23,12 @@ public class RepositoryContextParser {
      * @return
      */
     public PsiMethod findCurrentMethod() {
-        if (caret == null) {
-            return null;
-        }
-        PsiElement pe = psiJavaFile.findElementAt(caret.getCaretModel().getOffset());
+        PsiElement pe = thunderEvent.getElementBeforeCaret();
         return findMethod(pe);
     }
 
     private PsiElement getFocusedElement() {
-        if (caret == null) {
-            return null;
-        }
-        return psiJavaFile.findElementAt(caret.getCaretModel().getOffset());
+        return thunderEvent.getElementBeforeCaret();
     }
 
     private PsiMethod findMethod(PsiElement element) {
@@ -101,8 +88,5 @@ public class RepositoryContextParser {
         return entityType.resolve();
     }
 
-    public static RepositoryContextParser from(AnActionEvent actionEvent) {
-        return new RepositoryContextParser(actionEvent);
-    }
 }
 

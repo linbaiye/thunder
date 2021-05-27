@@ -1,14 +1,16 @@
 package org.fastj.thunder.scope;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 
-public class RepositoryScopeMatcher implements ScopeMatcher {
+public class RepositoryScopeMatcher extends AbstractScopeMatcher {
 
-    private boolean isInsideRepositoryScope(AnActionEvent actionEvent) {
-        PsiFile psiFile = actionEvent.getData(CommonDataKeys.PSI_FILE);
+    public RepositoryScopeMatcher(ScopeMatcher next) {
+        super(next);
+    }
+
+    private boolean isInsideRepositoryScope(ThunderEvent thunderEvent) {
+        PsiFile psiFile = thunderEvent.getFile();
         if (!(psiFile instanceof PsiJavaFile)) {
             return false;
         }
@@ -21,10 +23,7 @@ public class RepositoryScopeMatcher implements ScopeMatcher {
     }
 
     @Override
-    public Scope match(AnActionEvent actionEvent) {
-        if (isInsideRepositoryScope(actionEvent)) {
-            return Scope.REPOSITORY;
-        }
-        return ScopeFinderRegistry.getInstance().getScopeFinder(Scope.BUILDER).match(actionEvent);
+    protected ScopeType doMatch(ThunderEvent thunderEvent) {
+        return isInsideRepositoryScope(thunderEvent) ? ScopeType.REPOSITORY : null;
     }
 }
