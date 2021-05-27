@@ -9,20 +9,19 @@
 
     <depends>com.intellij.modules.platform</depends>
 
-        <extensions defaultExtensionNs="com.intellij">
-            <completion.contributor
-            implementationClass="org.fastj.thunder.completion.ThunderCompletionContributor"
-            language="JAVA"
-            />
+    <extensions defaultExtensionNs="com.intellij">
+        <completion.contributor
+                implementationClass="org.fastj.thunder.completion.ThunderCompletionContributor"
+                language="JAVA"/>
 
-        </extensions>
+    </extensions>
 
-<!--    <extensions defaultExtensionNs="com.intellij">-->
-<!--        <toolWindow id="thunder"-->
-<!--                    secondary="false"-->
-<!--                    anchor="bottom"-->
-<!--                    factoryClass="com.intellij.execution.services.ServiceViewToolWindowFactory" />-->
-<!--    </extensions>-->
+    <!--    <extensions defaultExtensionNs="com.intellij">-->
+    <!--        <toolWindow id="thunder"-->
+    <!--                    secondary="false"-->
+    <!--                    anchor="bottom"-->
+    <!--                    factoryClass="com.intellij.execution.services.ServiceViewToolWindowFactory" />-->
+    <!--    </extensions>-->
 
     <actions>
         <action id="org.fastj.thunder.PopupDialogAction" class="org.fastj.thunder.PopupDialogAction"
