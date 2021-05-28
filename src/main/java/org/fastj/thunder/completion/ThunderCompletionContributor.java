@@ -29,6 +29,6 @@ public class ThunderCompletionContributor extends CompletionContributor {
 
 
     public ThunderCompletionContributor() {
-        extend(CompletionType.BASIC, BUILDER_PATTERN, new ThunderCompletionProvider());
+        extend(CompletionType.BASIC, BUILDER_PATTERN, new BuilderCompletionProvider());
     }
 }

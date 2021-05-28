@@ -24,13 +24,14 @@ public class CodeModifierFactory {
         return scopeMatcher.match(event);
     }
 
-    public Optional<? extends CodeModifier> create(ThunderEvent thunderEvent) {
+
+    public Optional<? extends CodeModifier> create(ThunderEvent thunderEvent, ScopeType scopeType) {
         PsiFile psiFile = thunderEvent.getFile();
         if (!(psiFile instanceof PsiJavaFile)) {
             return Optional.empty();
         }
         PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
-        switch (matchType(thunderEvent)) {
+        switch (scopeType) {
             case UNIT_TEST_CLASS:
                 return UnitTestCodeModifier.create(psiJavaFile);
             case REPOSITORY:
@@ -44,5 +45,9 @@ public class CodeModifierFactory {
             default:
                 return Optional.empty();
         }
+    }
+
+    public Optional<? extends CodeModifier> create(ThunderEvent thunderEvent) {
+        return create(thunderEvent, matchType(thunderEvent));
     }
 }
