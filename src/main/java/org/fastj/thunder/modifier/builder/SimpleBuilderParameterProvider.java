@@ -6,23 +6,25 @@ import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiTypesUtil;
 import org.fastj.thunder.until.NamingUtil;
-
 import java.util.Map;
 
-public class SimpleParameterSelector implements ParameterSelector {
+public class SimpleBuilderParameterProvider extends AbstractParameterProvider {
 
-    private final Map<String, PsiType> parameterCandidates;
+    public SimpleBuilderParameterProvider(Map<String, PsiType> parameterCandidates) {
+        super(null, parameterCandidates);
+    }
 
-    public SimpleParameterSelector(Map<String, PsiType> parameterCandidates) {
-        this.parameterCandidates = parameterCandidates;
+    public SimpleBuilderParameterProvider(BuilderParameterProvider parameterSelector,
+                                          LombokBuilderScopeParser lombokBuilderScopeParser) {
+        super(parameterSelector, lombokBuilderScopeParser.getSourceParameterCandidates());
     }
 
     @Override
-    public String selectParameterExpression(String builderMethodName) {
-        if (parameterCandidates.containsKey(builderMethodName)) {
+    protected String doSelect(String builderMethodName) {
+        if (candidates.containsKey(builderMethodName)) {
             return builderMethodName;
         }
-        for (Map.Entry<String, PsiType> entry: parameterCandidates.entrySet()) {
+        for (Map.Entry<String, PsiType> entry: candidates.entrySet()) {
             PsiClass psiClass = PsiTypesUtil.getPsiClass(entry.getValue());
             if (psiClass == null) {
                 continue;
@@ -33,11 +35,6 @@ public class SimpleParameterSelector implements ParameterSelector {
             }
         }
         return null;
-    }
-
-    private boolean isJreType(PsiType type) {
-        return type.getCanonicalText().startsWith("java") ||
-                type instanceof PsiPrimitiveType;
     }
 
 }

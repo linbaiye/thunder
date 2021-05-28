@@ -3,8 +3,9 @@ package org.fastj.thunder.modifier;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 import org.fastj.thunder.modifier.builder.BuilderCodeModifier;
+import org.fastj.thunder.modifier.builder.BuilderParameterProviderFactory;
 import org.fastj.thunder.modifier.builder.LombokBuilderScopeParser;
-import org.fastj.thunder.modifier.builder.SimpleParameterSelector;
+import org.fastj.thunder.modifier.builder.SimpleBuilderParameterProvider;
 import org.fastj.thunder.modifier.persistence.RepositoryCodeModifier;
 import org.fastj.thunder.modifier.persistence.RepositoryContextParser;
 import org.fastj.thunder.scope.*;
@@ -41,7 +42,7 @@ public class CodeModifierFactory {
             case BUILDER:
                 LombokBuilderScopeParser builderContextParser = new LombokBuilderScopeParser(thunderEvent);
                 return Optional.of(new BuilderCodeModifier(builderContextParser,
-                        new SimpleParameterSelector(builderContextParser.getSourceParameterCandidates())));
+                        BuilderParameterProviderFactory.getInstance().create(builderContextParser)));
             default:
                 return Optional.empty();
         }

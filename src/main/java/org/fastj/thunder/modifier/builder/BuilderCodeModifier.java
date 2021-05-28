@@ -19,14 +19,14 @@ public class BuilderCodeModifier implements CodeModifier {
 
     private final LombokBuilderScopeParser contextParser;
 
-    private final ParameterSelector parameterSelector;
+    private final BuilderParameterProvider builderParameterProvider;
 
     private Map<String, PsiType> parameterCandidates;
 
     public BuilderCodeModifier(LombokBuilderScopeParser contextParser,
-                               ParameterSelector parameterSelector) {
+                               BuilderParameterProvider builderParameterProvider) {
         this.contextParser = contextParser;
-        this.parameterSelector = parameterSelector;
+        this.builderParameterProvider = builderParameterProvider;
     }
 
     private String findGetter(String name, PsiClass from, String className) {
@@ -53,7 +53,7 @@ public class BuilderCodeModifier implements CodeModifier {
         StringBuilder stringBuilder = new StringBuilder(resultClass.getQualifiedName());
         stringBuilder.append(".builder()\n");
         for (PsiMethod psiMethod : methodList) {
-            String expression = parameterSelector.selectParameterExpression(psiMethod.getName());
+            String expression = builderParameterProvider.provideParameterExpression(psiMethod.getName());
             if (expression == null) {
                 continue;
             }

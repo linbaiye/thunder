@@ -16,8 +16,6 @@ public class LombokBuilderScopeParser extends AbstractScopeParser {
 
     private PsiClass builder;
 
-    private PsiType builderType;
-
     // XXX.builder()
     private PsiMethod buildingMethod;
 
@@ -44,39 +42,12 @@ public class LombokBuilderScopeParser extends AbstractScopeParser {
         parseBuilderSourceParameterCandidates();
     }
 
-    private void visitMethodCalling(PsiElement psiElement) {
-        psiElement.acceptChildren(new JavaElementVisitor() {
-            @Override
-            public void visitMethodCallExpression(PsiMethodCallExpression expression) {
-                methodCallExpression = expression;
-                buildingMethod = expression.resolveMethod();
-            }
-        });
-    }
-
     private void parseResultClass() {
         if (builder != null &&
                 builder.getParent() instanceof PsiClass) {
             resultClass = (PsiClass) builder.getParent();
         }
     }
-
-//    private void parseSibling(PsiElement prevSibling) {
-//        if (prevSibling instanceof PsiDeclarationStatement) {
-//            prevSibling.acceptChildren(new JavaElementVisitor() {
-//                @Override
-//                public void visitLocalVariable(PsiLocalVariable variable) {
-//                    selfVariable = variable;
-//                    visitMethodCalling(variable);
-//                }
-//            });
-//        } else if (prevSibling instanceof PsiMethodCallExpression) {
-//            methodCallExpression = (PsiMethodCallExpression) prevSibling;
-//            buildingMethod = methodCallExpression.resolveMethod();
-//        } else {
-//            visitMethodCalling(prevSibling);
-//        }
-//    }
 
     private void parseWhenIdentifier(PsiIdentifier psiIdentifier) {
         PsiMethodCallExpression callExpression =
@@ -106,7 +77,7 @@ public class LombokBuilderScopeParser extends AbstractScopeParser {
             }
         }
         if (buildingMethod != null) {
-            builderType = buildingMethod.getReturnType();
+            PsiType builderType = buildingMethod.getReturnType();
             builder = PsiTypesUtil.getPsiClass(builderType);
         }
     }
