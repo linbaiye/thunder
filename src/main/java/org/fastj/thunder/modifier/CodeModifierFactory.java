@@ -3,7 +3,7 @@ package org.fastj.thunder.modifier;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 import org.fastj.thunder.modifier.builder.BuilderCodeModifier;
-import org.fastj.thunder.modifier.builder.BuilderScopeParser;
+import org.fastj.thunder.modifier.builder.LombokBuilderScopeParser;
 import org.fastj.thunder.modifier.builder.SimpleParameterSelector;
 import org.fastj.thunder.modifier.persistence.RepositoryCodeModifier;
 import org.fastj.thunder.modifier.persistence.RepositoryContextParser;
@@ -39,7 +39,7 @@ public class CodeModifierFactory {
                 return RepositoryCodeModifier.from(parser.findCurrentMethod(), parser.findEntityClass(),
                         parser.findDaoIdentifierNearFocusedElement(), parser.findDaoField());
             case BUILDER:
-                BuilderScopeParser builderContextParser = new BuilderScopeParser(thunderEvent);
+                LombokBuilderScopeParser builderContextParser = new LombokBuilderScopeParser(thunderEvent);
                 return Optional.of(new BuilderCodeModifier(builderContextParser,
                         new SimpleParameterSelector(builderContextParser.getSourceParameterCandidates())));
             default:

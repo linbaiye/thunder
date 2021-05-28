@@ -3,7 +3,7 @@ package org.fastj.thunder.scope;
 import com.intellij.psi.*;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.fastj.thunder.modifier.builder.BuilderCodeModifier;
-import org.fastj.thunder.modifier.builder.BuilderScopeParser;
+import org.fastj.thunder.modifier.builder.LombokBuilderScopeParser;
 import org.fastj.thunder.modifier.builder.SimpleParameterSelector;
 import org.junit.Assert;
 
@@ -20,8 +20,8 @@ public class BuilderCodeModifierTest extends LightJavaCodeInsightFixtureTestCase
     public void testModifyDeclarationStatement() {
         PsiFile[] files = myFixture.configureByFiles("builder/TestCaretAtDeclaration.java", "builder/TestClass.java");
         TestThunderEvent event = new TestThunderEvent(myFixture);
-        BuilderScopeParser builderScopeParser = new BuilderScopeParser(event);
-        BuilderCodeModifier builderCodeModifier = new BuilderCodeModifier(builderScopeParser, new SimpleParameterSelector(builderScopeParser.getSourceParameterCandidates()));
+        LombokBuilderScopeParser lombokBuilderScopeParser = new LombokBuilderScopeParser(event);
+        BuilderCodeModifier builderCodeModifier = new BuilderCodeModifier(lombokBuilderScopeParser, new SimpleParameterSelector(lombokBuilderScopeParser.getSourceParameterCandidates()));
         builderCodeModifier.tryModify();
         assertModifiedClass(files[0]);
     }
@@ -29,8 +29,8 @@ public class BuilderCodeModifierTest extends LightJavaCodeInsightFixtureTestCase
     public void testModifyExpressionStatement() {
         PsiFile[] files = myFixture.configureByFiles("builder/TestExpressionStatement.java", "builder/TestClass.java");
         TestThunderEvent event = new TestThunderEvent(myFixture);
-        BuilderScopeParser builderScopeParser = new BuilderScopeParser(event);
-        BuilderCodeModifier builderCodeModifier = new BuilderCodeModifier(builderScopeParser, new SimpleParameterSelector(builderScopeParser.getSourceParameterCandidates()));
+        LombokBuilderScopeParser lombokBuilderScopeParser = new LombokBuilderScopeParser(event);
+        BuilderCodeModifier builderCodeModifier = new BuilderCodeModifier(lombokBuilderScopeParser, new SimpleParameterSelector(lombokBuilderScopeParser.getSourceParameterCandidates()));
         builderCodeModifier.tryModify();
         assertModifiedClass(files[0]);
     }
@@ -38,8 +38,8 @@ public class BuilderCodeModifierTest extends LightJavaCodeInsightFixtureTestCase
     public void testModifyInsideLambda() {
         PsiFile[] files = myFixture.configureByFiles("builder/TestInsideLambda.java", "builder/TestClass.java");
         TestThunderEvent event = new TestThunderEvent(myFixture);
-        BuilderScopeParser builderScopeParser = new BuilderScopeParser(event);
-        BuilderCodeModifier builderCodeModifier = new BuilderCodeModifier(builderScopeParser, new SimpleParameterSelector(builderScopeParser.getSourceParameterCandidates()));
+        LombokBuilderScopeParser lombokBuilderScopeParser = new LombokBuilderScopeParser(event);
+        BuilderCodeModifier builderCodeModifier = new BuilderCodeModifier(lombokBuilderScopeParser, new SimpleParameterSelector(lombokBuilderScopeParser.getSourceParameterCandidates()));
         builderCodeModifier.tryModify();
         assertModifiedClass(files[0]);
     }
@@ -47,8 +47,8 @@ public class BuilderCodeModifierTest extends LightJavaCodeInsightFixtureTestCase
     public void testModifyReturnStatement() {
         PsiFile[] files = myFixture.configureByFiles("builder/TestReturnStatement.java", "builder/TestClass.java");
         TestThunderEvent event = new TestThunderEvent(myFixture);
-        BuilderScopeParser builderScopeParser = new BuilderScopeParser(event);
-        BuilderCodeModifier builderCodeModifier = new BuilderCodeModifier(builderScopeParser, new SimpleParameterSelector(builderScopeParser.getSourceParameterCandidates()));
+        LombokBuilderScopeParser lombokBuilderScopeParser = new LombokBuilderScopeParser(event);
+        BuilderCodeModifier builderCodeModifier = new BuilderCodeModifier(lombokBuilderScopeParser, new SimpleParameterSelector(lombokBuilderScopeParser.getSourceParameterCandidates()));
         builderCodeModifier.tryModify();
         assertModifiedClass(files[0]);
     }

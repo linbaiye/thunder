@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class BuilderScopeParser extends AbstractScopeParser {
+public class LombokBuilderScopeParser extends AbstractScopeParser {
 
     private PsiClass builder;
 
@@ -37,7 +37,7 @@ public class BuilderScopeParser extends AbstractScopeParser {
     private Map<String, PsiType> sourceParameterCandidates;
 
 
-    public BuilderScopeParser(ThunderEvent thunderEvent) {
+    public LombokBuilderScopeParser(ThunderEvent thunderEvent) {
         super(thunderEvent);
         parseBuilderMethod();
         parseResultClass();
@@ -55,12 +55,9 @@ public class BuilderScopeParser extends AbstractScopeParser {
     }
 
     private void parseResultClass() {
-        if (builder != null) {
-            PsiMethod[] methods = builder.findMethodsByName("build", false);
-            if (methods.length == 1) {
-                PsiType psiType = methods[0].getReturnType();
-                resultClass = PsiTypesUtil.getPsiClass(psiType);
-            }
+        if (builder != null &&
+                builder.getParent() instanceof PsiClass) {
+            resultClass = (PsiClass) builder.getParent();
         }
     }
 
@@ -126,12 +123,20 @@ public class BuilderScopeParser extends AbstractScopeParser {
         return resultClass;
     }
 
+    private Set<String> getBuilderFieldNames() {
+        if (builder == null) {
+            return Collections.emptySet();
+        }
+        return Arrays.stream(builder.getFields()).map(PsiField::getName).collect(Collectors.toSet());
+    }
+
     public List<PsiMethod> parseChainMethods() {
         if (builder == null) {
             return Collections.emptyList();
         }
+        Set<String> fieldNames = getBuilderFieldNames();
         PsiMethod[] methods = builder.getMethods();
-        return Stream.of(methods).filter(e -> builderType.equals(e.getReturnType())).collect(Collectors.toList());
+        return Stream.of(methods).filter(e -> fieldNames.contains(e.getName())).collect(Collectors.toList());
     }
 
     private PsiMethod findMethod(PsiElement element) {

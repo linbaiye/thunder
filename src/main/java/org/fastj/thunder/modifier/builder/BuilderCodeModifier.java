@@ -17,13 +17,13 @@ import java.util.Map;
 
 public class BuilderCodeModifier implements CodeModifier {
 
-    private final BuilderScopeParser contextParser;
+    private final LombokBuilderScopeParser contextParser;
 
     private final ParameterSelector parameterSelector;
 
     private Map<String, PsiType> parameterCandidates;
 
-    public BuilderCodeModifier(BuilderScopeParser contextParser,
+    public BuilderCodeModifier(LombokBuilderScopeParser contextParser,
                                ParameterSelector parameterSelector) {
         this.contextParser = contextParser;
         this.parameterSelector = parameterSelector;
