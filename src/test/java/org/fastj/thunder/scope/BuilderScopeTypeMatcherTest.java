@@ -1,7 +1,8 @@
 package org.fastj.thunder.scope;
 
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementFactory;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
-import org.intellij.lang.annotations.Language;
 import org.junit.Assert;
 
 public class BuilderScopeTypeMatcherTest extends LightJavaCodeInsightFixtureTestCase {
@@ -10,7 +11,7 @@ public class BuilderScopeTypeMatcherTest extends LightJavaCodeInsightFixtureTest
         myFixture.configureByText("DeclarationStatementBuilder.java",
                 "public class DeclarationStatementBuilder {" +
                 "public void test() {" +
-                "Hello hello = Hello.builder()<caret> " +
+                "Hello hello = Hello.builder().<caret> " +
                         "}" +
                         "}");
         TestThunderEvent event = new TestThunderEvent(myFixture);
@@ -22,7 +23,7 @@ public class BuilderScopeTypeMatcherTest extends LightJavaCodeInsightFixtureTest
         myFixture.configureByText("DeclarationStatementBuilder.java",
                 "public class DeclarationStatementBuilder {" +
                         "public void test() {" +
-                        "Hello.builder()<caret> " +
+                        "Hello.builder().<caret> " +
                         "}" +
                         "}");
         TestThunderEvent event = new TestThunderEvent(myFixture);
@@ -34,7 +35,7 @@ public class BuilderScopeTypeMatcherTest extends LightJavaCodeInsightFixtureTest
         myFixture.configureByText("DeclarationStatementBuilder.java",
                 "public class DeclarationStatementBuilder {" +
                         "public void test(List<World> worldList) {" +
-                        "worldList.stream().map(e -> Hello.builder()<caret>) " +
+                        "worldList.stream().map(e -> Hello.builder().<caret>) " +
                         "}" +
                         "}");
         TestThunderEvent event = new TestThunderEvent(myFixture);
@@ -48,7 +49,7 @@ public class BuilderScopeTypeMatcherTest extends LightJavaCodeInsightFixtureTest
                 "public class DeclarationStatementBuilder {" +
                         "private RemoteService service;" +
                         "public void test(Hello hello) {" +
-                        "service.query(World.builder()<caret>)"+
+                        "service.query(World.builder().<caret>)"+
                         "}" +
                         "}");
         TestThunderEvent event = new TestThunderEvent(myFixture);

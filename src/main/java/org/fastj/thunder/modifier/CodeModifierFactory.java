@@ -7,10 +7,7 @@ import org.fastj.thunder.modifier.builder.BuilderScopeParser;
 import org.fastj.thunder.modifier.builder.SimpleParameterSelector;
 import org.fastj.thunder.modifier.persistence.RepositoryCodeModifier;
 import org.fastj.thunder.modifier.persistence.RepositoryContextParser;
-import org.fastj.thunder.scope.ScopeMatcher;
-import org.fastj.thunder.scope.ScopeMatcherFactory;
-import org.fastj.thunder.scope.ScopeType;
-import org.fastj.thunder.scope.ThunderEvent;
+import org.fastj.thunder.scope.*;
 
 import java.util.Optional;
 
@@ -22,15 +19,18 @@ public class CodeModifierFactory {
         return CODE_MODIFIER_FACTORY;
     }
 
+    private ScopeType matchType(ThunderEvent event) {
+        ScopeMatcher scopeMatcher = ScopeMatcherFactory.getInstance().getOrCreate();
+        return scopeMatcher.match(event);
+    }
+
     public Optional<? extends CodeModifier> create(ThunderEvent thunderEvent) {
         PsiFile psiFile = thunderEvent.getFile();
         if (!(psiFile instanceof PsiJavaFile)) {
             return Optional.empty();
         }
         PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
-        ScopeMatcher scopeMatcher = ScopeMatcherFactory.getInstance().getOrCreate();
-        ScopeType scopeType = scopeMatcher.match(thunderEvent);
-        switch (scopeType) {
+        switch (matchType(thunderEvent)) {
             case UNIT_TEST_CLASS:
                 return UnitTestCodeModifier.create(psiJavaFile);
             case REPOSITORY:

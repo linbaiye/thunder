@@ -23,12 +23,12 @@ public class RepositoryContextParser {
      * @return
      */
     public PsiMethod findCurrentMethod() {
-        PsiElement pe = thunderEvent.getElementBeforeCaret();
+        PsiElement pe = thunderEvent.getElementAtCaret();
         return findMethod(pe);
     }
 
     private PsiElement getFocusedElement() {
-        return thunderEvent.getElementBeforeCaret();
+        return thunderEvent.getElementAtCaret();
     }
 
     private PsiMethod findMethod(PsiElement element) {

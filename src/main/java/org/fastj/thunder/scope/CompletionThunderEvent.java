@@ -1,17 +1,17 @@
 package org.fastj.thunder.scope;
 
+import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.testFramework.fixtures.JavaCodeInsightTestFixture;
 
-public class TestThunderEvent implements ThunderEvent {
+public class CompletionThunderEvent implements ThunderEvent {
 
-    private final JavaCodeInsightTestFixture fixture;
+    private final InsertionContext insertionContext;
 
-    public TestThunderEvent(JavaCodeInsightTestFixture fixture) {
-        this.fixture = fixture;
+    public CompletionThunderEvent(InsertionContext insertionContext) {
+        this.insertionContext = insertionContext;
     }
 
     @Override
@@ -21,21 +21,21 @@ public class TestThunderEvent implements ThunderEvent {
 
     @Override
     public int getCaretOffset() {
-        return fixture.getCaretOffset();
+        return insertionContext.getEditor().getCaretModel().getOffset();
     }
 
     @Override
     public PsiFile getFile() {
-        return fixture.getFile();
+        return insertionContext.getFile();
     }
 
     @Override
     public Project getProject() {
-        return fixture.getProject();
+        return insertionContext.getProject();
     }
 
     @Override
     public Editor getEditor() {
-        return fixture.getEditor();
+        return insertionContext.getEditor();
     }
 }

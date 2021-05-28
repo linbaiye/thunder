@@ -66,7 +66,14 @@ public class BuilderCodeModifier implements CodeModifier {
         stringBuilder.append(contextParser.isBuilderMethodContainedInLambda() ? ".build()": ".build();");
         PsiElement element = PsiElementFactory.getInstance(contextParser.getProject()).createStatementFromText(stringBuilder.toString(), null);
         WriteCommandAction.runWriteCommandAction(contextParser.getProject(), "", "", () -> {
-            methodCallExpression.replace(element);
+            PsiElement replaced = methodCallExpression.replace(element);
+            if (replaced.getNextSibling() instanceof PsiJavaToken) {
+                // Any more graceful method to remove the insertion text?
+                PsiJavaToken token = (PsiJavaToken) replaced.getNextSibling();
+                if (".".equals(token.getText())) {
+                    token.delete();
+                }
+            }
         });
     }
 

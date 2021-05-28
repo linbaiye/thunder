@@ -10,7 +10,7 @@ import com.intellij.psi.PsiFile;
  */
 public interface ThunderEvent {
 
-    default PsiElement getElementBeforeCaret() {
+    default PsiElement getElementAtCaret() {
         return null;
     }
 
