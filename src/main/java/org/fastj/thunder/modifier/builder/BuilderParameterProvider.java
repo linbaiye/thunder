@@ -10,7 +10,7 @@ public interface BuilderParameterProvider {
     /**
      * Provides the parameter expression if any.
      * @param builderMethodName
-     * @return the builder method parameter expression, or null.
+     * @return the builder method's parameter expression, or null.
      */
     String provideParameterExpression(String builderMethodName);
 
