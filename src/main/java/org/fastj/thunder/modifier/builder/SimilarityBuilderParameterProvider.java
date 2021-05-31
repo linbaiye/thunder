@@ -66,39 +66,4 @@ public class SimilarityBuilderParameterProvider extends AbstractParameterProvide
             return o.score.compareTo(this.score);
         }
     }
-
-    private static class LevenshteinDistanceSimilarityScore
-            implements Comparable<LevenshteinDistanceSimilarityScore> {
-        private String expression;
-        private int distance;
-
-        public LevenshteinDistanceSimilarityScore(String expression, int distance) {
-            this.expression = expression;
-            this.distance = distance;
-        }
-
-        @Override
-        public int compareTo(@NotNull SimilarityBuilderParameterProvider.LevenshteinDistanceSimilarityScore o) {
-            return this.distance - o.distance;
-        }
-    }
-
-    private static class SimilarityScore implements Comparable<SimilarityScore> {
-
-        private String expression;
-        private Double rateToBuilderMethodName;
-        private Double rateToCandidateName;
-
-        public SimilarityScore(String expression, Double rateToBuilderMethodName, Double rateToCandidateName) {
-            this.expression = expression;
-            this.rateToBuilderMethodName = rateToBuilderMethodName;
-            this.rateToCandidateName = rateToCandidateName;
-        }
-
-        @Override
-        public int compareTo(@NotNull SimilarityBuilderParameterProvider.SimilarityScore o) {
-            int ret = o.rateToBuilderMethodName.compareTo(this.rateToBuilderMethodName);
-            return ret == 0? o.rateToCandidateName.compareTo(this.rateToCandidateName) : ret;
-        }
-    }
 }
