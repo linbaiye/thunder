@@ -1,13 +1,13 @@
 package org.fastj.thunder.scope;
 
 /**
- * The scope inside which the plug-in was triggered.
+ * The context inside which the plug-in was triggered.
  */
-public enum ScopeType {
+public enum ContextType {
 
     UNIT_TEST_CLASS,
 
-    REPOSITORY,
+    REPOSITORY_METHOD,
 
     /**
      * We are calling some builder method.

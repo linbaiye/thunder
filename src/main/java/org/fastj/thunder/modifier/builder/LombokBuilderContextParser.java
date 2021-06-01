@@ -1,18 +1,16 @@
 package org.fastj.thunder.modifier.builder;
 
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
-import org.fastj.thunder.modifier.AbstractScopeParser;
+import org.fastj.thunder.modifier.AbstractContextParser;
 import org.fastj.thunder.scope.ThunderEvent;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class LombokBuilderScopeParser extends AbstractScopeParser {
+public class LombokBuilderContextParser extends AbstractContextParser {
 
     private PsiClass builder;
 
@@ -35,7 +33,7 @@ public class LombokBuilderScopeParser extends AbstractScopeParser {
     private Map<String, PsiType> sourceParameterCandidates;
 
 
-    public LombokBuilderScopeParser(ThunderEvent thunderEvent) {
+    public LombokBuilderContextParser(ThunderEvent thunderEvent) {
         super(thunderEvent);
         parseBuilderMethod();
         parseResultClass();
@@ -156,17 +154,5 @@ public class LombokBuilderScopeParser extends AbstractScopeParser {
         addToCandidates(parameters);
         Collection<PsiLocalVariable> variables = PsiTreeUtil.findChildrenOfType(method, PsiLocalVariable.class);
         addToCandidates(variables);
-    }
-
-    public Project getProject() {
-        return thunderEvent.getProject();
-    }
-
-    public Editor getEditor() {
-        return thunderEvent.getEditor();
-    }
-
-    public PsiElement getElementAtCaret() {
-        return thunderEvent.getElementAtCaret();
     }
 }

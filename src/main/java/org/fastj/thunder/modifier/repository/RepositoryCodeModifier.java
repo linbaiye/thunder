@@ -1,4 +1,4 @@
-package org.fastj.thunder.modifier.persistence;
+package org.fastj.thunder.modifier.repository;
 
 
 import com.google.common.collect.ImmutableSet;
@@ -6,6 +6,7 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import org.fastj.thunder.modifier.CodeModifier;
+import org.fastj.thunder.scope.ThunderEvent;
 import org.fastj.thunder.until.NamingUtil;
 
 import java.util.*;
@@ -23,6 +24,8 @@ public class RepositoryCodeModifier implements CodeModifier {
     private final PsiField daoOrRepositoryField;
 
     private final Project project;
+
+    private final RepositoryContextParser contextParser;
 
     private final static Pattern WORD_PATTERN = Pattern.compile("([A-Z][a-z]+)");
 
@@ -42,6 +45,15 @@ public class RepositoryCodeModifier implements CodeModifier {
         OPERATORS_MAP.put("Ge", "ge");
     }
 
+    public RepositoryCodeModifier(RepositoryContextParser contextParser) {
+        this.psiMethod  = null;
+        this.entityClass = null;
+        this.focusedElement = null;
+        this.daoOrRepositoryField = null;
+        this.project = null;
+        this.contextParser = contextParser;
+    }
+
     public RepositoryCodeModifier(PsiMethod method,
                                   PsiClass entityClass,
                                   PsiElement focusedElement,
@@ -51,6 +63,7 @@ public class RepositoryCodeModifier implements CodeModifier {
         this.focusedElement = focusedElement;
         this.daoOrRepositoryField = daoOrRepositoryField;
         this.project = focusedElement.getProject();
+        this.contextParser = null;
     }
 
     private List<Criterion> parseColumnNamesInMethodName() {

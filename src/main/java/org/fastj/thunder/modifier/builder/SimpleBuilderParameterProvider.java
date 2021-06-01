@@ -2,7 +2,6 @@ package org.fastj.thunder.modifier.builder;
 
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiTypesUtil;
 import org.fastj.thunder.until.NamingUtil;
@@ -15,7 +14,7 @@ public class SimpleBuilderParameterProvider extends AbstractParameterProvider {
     }
 
     public SimpleBuilderParameterProvider(BuilderParameterProvider parameterSelector,
-                                          LombokBuilderScopeParser lombokBuilderScopeParser) {
+                                          LombokBuilderContextParser lombokBuilderScopeParser) {
         super(parameterSelector, lombokBuilderScopeParser.getSourceParameterCandidates());
     }
 

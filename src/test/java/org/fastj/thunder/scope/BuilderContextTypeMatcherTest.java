@@ -1,11 +1,9 @@
 package org.fastj.thunder.scope;
 
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementFactory;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.junit.Assert;
 
-public class BuilderScopeTypeMatcherTest extends LightJavaCodeInsightFixtureTestCase {
+public class BuilderContextTypeMatcherTest extends LightJavaCodeInsightFixtureTestCase {
 
     public void testMatchDeclarationStatementBuilder() {
         myFixture.configureByText("DeclarationStatementBuilder.java",
@@ -15,8 +13,8 @@ public class BuilderScopeTypeMatcherTest extends LightJavaCodeInsightFixtureTest
                         "}" +
                         "}");
         TestThunderEvent event = new TestThunderEvent(myFixture);
-        BuilderScopeMatcher matcher = new BuilderScopeMatcher(null);
-        Assert.assertSame(matcher.match(event), ScopeType.BUILDER);
+        BuilderContextMatcher matcher = new BuilderContextMatcher(null);
+        Assert.assertSame(matcher.match(event), ContextType.BUILDER);
     }
 
     public void testMatchMethodCallExpressionBuilder() {
@@ -27,8 +25,8 @@ public class BuilderScopeTypeMatcherTest extends LightJavaCodeInsightFixtureTest
                         "}" +
                         "}");
         TestThunderEvent event = new TestThunderEvent(myFixture);
-        BuilderScopeMatcher matcher = new BuilderScopeMatcher(null);
-        Assert.assertSame(matcher.match(event), ScopeType.BUILDER);
+        BuilderContextMatcher matcher = new BuilderContextMatcher(null);
+        Assert.assertSame(matcher.match(event), ContextType.BUILDER);
     }
 
     public void testMatchInsideLambda() {
@@ -39,8 +37,8 @@ public class BuilderScopeTypeMatcherTest extends LightJavaCodeInsightFixtureTest
                         "}" +
                         "}");
         TestThunderEvent event = new TestThunderEvent(myFixture);
-        BuilderScopeMatcher matcher = new BuilderScopeMatcher(null);
-        Assert.assertSame(matcher.match(event), ScopeType.BUILDER);
+        BuilderContextMatcher matcher = new BuilderContextMatcher(null);
+        Assert.assertSame(matcher.match(event), ContextType.BUILDER);
     }
 
 
@@ -53,7 +51,7 @@ public class BuilderScopeTypeMatcherTest extends LightJavaCodeInsightFixtureTest
                         "}" +
                         "}");
         TestThunderEvent event = new TestThunderEvent(myFixture);
-        BuilderScopeMatcher matcher = new BuilderScopeMatcher(null);
-        Assert.assertSame(matcher.match(event), ScopeType.BUILDER);
+        BuilderContextMatcher matcher = new BuilderContextMatcher(null);
+        Assert.assertSame(matcher.match(event), ContextType.BUILDER);
     }
 }

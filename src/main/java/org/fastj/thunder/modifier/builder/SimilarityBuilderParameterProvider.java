@@ -17,7 +17,7 @@ public class SimilarityBuilderParameterProvider extends AbstractParameterProvide
     private final static Double THRESHOLD = 0.7;
 
     public SimilarityBuilderParameterProvider(BuilderParameterProvider next,
-                                              LombokBuilderScopeParser parser) {
+                                              LombokBuilderContextParser parser) {
         super(next, parser.getSourceParameterCandidates());
         similarityCalculator = new JaroWinklerSimilarity();
     }

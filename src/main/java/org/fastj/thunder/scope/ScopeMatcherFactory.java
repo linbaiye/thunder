@@ -8,10 +8,10 @@ public class ScopeMatcherFactory {
 
     private final static ScopeMatcherFactory SCOPE_MATCHER_REGISTRY = new ScopeMatcherFactory();
 
-    private volatile ScopeMatcher head;
+    private volatile ContextMatcher head;
 
-    private static final List<Class<? extends ScopeMatcher>> CLASS_LIST = Arrays.asList(
-            BuilderScopeMatcher.class, RepositoryScopeMatcher.class, UnitTestClassScopeMatcher.class
+    private static final List<Class<? extends ContextMatcher>> CLASS_LIST = Arrays.asList(
+            BuilderContextMatcher.class, RepositoryContextMatcher.class, UnitTestClassContextMatcher.class
     );
 
     public static ScopeMatcherFactory getInstance() {
@@ -20,9 +20,9 @@ public class ScopeMatcherFactory {
 
     private synchronized void buildMatcherChain() {
         try {
-            ScopeMatcher current = null;
-            for (Class<? extends ScopeMatcher> matcherClass : CLASS_LIST) {
-                Constructor<? extends ScopeMatcher> constructor = matcherClass.getConstructor(ScopeMatcher.class);
+            ContextMatcher current = null;
+            for (Class<? extends ContextMatcher> matcherClass : CLASS_LIST) {
+                Constructor<? extends ContextMatcher> constructor = matcherClass.getConstructor(ContextMatcher.class);
                 current = constructor.newInstance(current);
             }
             head = current;
@@ -31,7 +31,7 @@ public class ScopeMatcherFactory {
         }
     }
 
-    public ScopeMatcher getOrCreate() {
+    public ContextMatcher getOrCreate() {
         if (head == null) {
             buildMatcherChain();
         }

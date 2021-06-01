@@ -1,21 +1,23 @@
-package org.fastj.thunder.modifier.persistence;
+package org.fastj.thunder.modifier.repository;
 
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.util.PsiTreeUtil;
+import org.fastj.thunder.modifier.AbstractContextParser;
 import org.fastj.thunder.scope.ThunderEvent;
 
 
-public class RepositoryContextParser {
-
-    private final ThunderEvent thunderEvent;
+public class RepositoryContextParser extends AbstractContextParser {
 
     private final PsiClass psiClass;
 
+    private final PsiClass entityClass;
+
     public RepositoryContextParser(ThunderEvent thunderEvent) {
-        this.thunderEvent = thunderEvent;
+        super(thunderEvent);
         PsiJavaFile psiJavaFile = (PsiJavaFile)thunderEvent.getFile();
         psiClass = psiJavaFile.getClasses()[0];
+        entityClass = findEntityClass();
     }
 
     /**
@@ -59,6 +61,10 @@ public class RepositoryContextParser {
             return null;
         }
         return psiClass.findFieldByName(identifier.getText(), false);
+    }
+
+    public PsiClass getEntityClass() {
+        return entityClass;
     }
 
     public PsiClass findEntityClass() {

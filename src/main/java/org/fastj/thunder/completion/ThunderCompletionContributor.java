@@ -1,7 +1,7 @@
 package org.fastj.thunder.completion;
 
-import com.intellij.codeInsight.completion.*;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.codeInsight.completion.CompletionContributor;
+import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
@@ -46,28 +46,39 @@ public class ThunderCompletionContributor extends CompletionContributor {
     private final static ElementPattern<? extends PsiElement> REPOSITORY_PATTERN = PlatformPatterns.
             psiElement(PsiIdentifier.class)
             .afterSibling(psiElement(PsiReferenceParameterList.class))
-            .withAncestor(3, psiElement(PsiMethodCallExpression.class).with(new PatternCondition<PsiMethodCallExpression>("Matching dao method name") {
-                @Override
-                public boolean accepts(@NotNull PsiMethodCallExpression psiMethodCallExpression, ProcessingContext context) {
-                    PsiMethod method = psiMethodCallExpression.resolveMethod();
-                    return method != null && REPOSITORY_METHOD_NAMES.contains(method.getName());
-                }
-            }))
-//            .with(new PatternCondition<PsiIdentifier>("Matching") {
-//                @Override
-//                public boolean accepts(@NotNull PsiIdentifier psiIdentifier, ProcessingContext context) {
-//                    return REPOSITORY_PREFIX.contains(psiIdentifier.getText());
-//                }
-//            })
-            ;
+            .withAncestor(3, psiElement(PsiMethodCallExpression.class)
+//                    .withChild(psiElement(PsiReferenceExpression.class)
+//                            .with(new PatternCondition<PsiReferenceExpression>("Matching dao class") {
+//                        @Override
+//                        public boolean accepts(@NotNull PsiReferenceExpression referenceExpression, ProcessingContext context) {
+//                            PsiExpression expression = referenceExpression.getQualifierExpression();
+//                            if (expression == null) {
+//                                return false;
+//                            }
+//                            PsiClass psiClass = PsiTypesUtil.getPsiClass(expression.getType());
+//                            if (psiClass == null) {
+//                                return false;
+//                            }
+//                            PsiAnnotation[] annotations = psiClass.getAnnotations();
+//                            for (PsiAnnotation annotation : annotations) {
+//                                if ("repository".equalsIgnoreCase(annotation.getText())) {
+//                                    return true;
+//                                }
+//                            }
+//                            return false;
+//                        }
+//                    }))
+                    .with(new PatternCondition<PsiMethodCallExpression>("Matching dao method name") {
+                        @Override
+                        public boolean accepts(@NotNull PsiMethodCallExpression psiMethodCallExpression, ProcessingContext context) {
+                            PsiMethod method = psiMethodCallExpression.resolveMethod();
+                            return method != null && REPOSITORY_METHOD_NAMES.contains(method.getName());
+                        }
+                    })
+            );
 
     public ThunderCompletionContributor() {
         extend(CompletionType.BASIC, BUILDER_PATTERN, new BuilderCompletionProvider());
-        extend(CompletionType.BASIC, REPOSITORY_PATTERN, new CompletionProvider<CompletionParameters>() {
-            @Override
-            protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
-                result.addElement(LookupElementBuilder.create("lambda"));
-            }
-        });
+        extend(CompletionType.BASIC, REPOSITORY_PATTERN, new RepositoryCompletionProvider());
     }
 }

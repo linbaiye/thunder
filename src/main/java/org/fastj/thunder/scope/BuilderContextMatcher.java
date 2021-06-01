@@ -3,9 +3,9 @@ package org.fastj.thunder.scope;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 
-public class BuilderScopeMatcher extends AbstractScopeMatcher {
+public class BuilderContextMatcher extends AbstractContextMatcher {
 
-    public BuilderScopeMatcher(ScopeMatcher next) {
+    public BuilderContextMatcher(ContextMatcher next) {
         super(next);
     }
 
@@ -32,7 +32,7 @@ public class BuilderScopeMatcher extends AbstractScopeMatcher {
     }
 
     @Override
-    protected ScopeType doMatch(ThunderEvent thunderEvent) {
-        return isBuilderScope(thunderEvent) ? ScopeType.BUILDER : null;
+    protected ContextType doMatch(ThunderEvent thunderEvent) {
+        return isBuilderScope(thunderEvent) ? ContextType.BUILDER : null;
     }
 }

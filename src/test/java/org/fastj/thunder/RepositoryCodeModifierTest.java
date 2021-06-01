@@ -3,7 +3,7 @@ package org.fastj.thunder;
 import com.intellij.psi.*;
 import com.intellij.psi.search.ProjectScope;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
-import org.fastj.thunder.modifier.persistence.RepositoryCodeModifier;
+import org.fastj.thunder.modifier.repository.RepositoryCodeModifier;
 import org.intellij.lang.annotations.Language;
 
 import java.util.Optional;

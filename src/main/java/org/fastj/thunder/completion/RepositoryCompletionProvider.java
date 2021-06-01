@@ -15,19 +15,17 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
-public class BuilderCompletionProvider extends CompletionProvider<CompletionParameters> {
+public class RepositoryCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     @Override
-    protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
-        result.addElement(LookupElementBuilder.create("thunder")
+    protected void addCompletions(@NotNull CompletionParameters parameters,
+                                  @NotNull ProcessingContext context,
+                                  @NotNull CompletionResultSet result) {
+        result.addElement(LookupElementBuilder.create("lambda")
                 .withInsertHandler((insertionContext, element) -> {
                     Optional<? extends CodeModifier> optionalCodeModifier = CodeModifierFactory.getInstance().create(new CompletionThunderEvent(insertionContext),
-                            ContextType.BUILDER);
+                            ContextType.REPOSITORY_METHOD);
                     optionalCodeModifier.ifPresent( e -> {
-                        PsiElement thunderString = insertionContext.getFile().findElementAt(insertionContext.getStartOffset());
-                        if (thunderString != null) {
-                            WriteCommandAction.runWriteCommandAction(insertionContext.getProject(), "", "", thunderString::delete);
-                        }
                         e.tryModify();
                     });
                 })

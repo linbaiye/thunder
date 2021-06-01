@@ -3,9 +3,9 @@ package org.fastj.thunder.scope;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 
-public class UnitTestClassScopeMatcher extends AbstractScopeMatcher {
+public class UnitTestClassContextMatcher extends AbstractContextMatcher {
 
-    public UnitTestClassScopeMatcher(ScopeMatcher next) {
+    public UnitTestClassContextMatcher(ContextMatcher next) {
         super(next);
     }
 
@@ -21,7 +21,7 @@ public class UnitTestClassScopeMatcher extends AbstractScopeMatcher {
     }
 
     @Override
-    protected ScopeType doMatch(ThunderEvent thunderEvent) {
-        return isUnitTest(thunderEvent) ? ScopeType.UNIT_TEST_CLASS : null;
+    protected ContextType doMatch(ThunderEvent thunderEvent) {
+        return isUnitTest(thunderEvent) ? ContextType.UNIT_TEST_CLASS : null;
     }
 }

@@ -4,10 +4,9 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 import org.fastj.thunder.modifier.builder.BuilderCodeModifier;
 import org.fastj.thunder.modifier.builder.BuilderParameterProviderFactory;
-import org.fastj.thunder.modifier.builder.LombokBuilderScopeParser;
-import org.fastj.thunder.modifier.builder.SimpleBuilderParameterProvider;
-import org.fastj.thunder.modifier.persistence.RepositoryCodeModifier;
-import org.fastj.thunder.modifier.persistence.RepositoryContextParser;
+import org.fastj.thunder.modifier.builder.LombokBuilderContextParser;
+import org.fastj.thunder.modifier.repository.RepositoryCodeModifier;
+import org.fastj.thunder.modifier.repository.RepositoryContextParser;
 import org.fastj.thunder.scope.*;
 
 import java.util.Optional;
@@ -20,27 +19,27 @@ public class CodeModifierFactory {
         return CODE_MODIFIER_FACTORY;
     }
 
-    private ScopeType matchType(ThunderEvent event) {
-        ScopeMatcher scopeMatcher = ScopeMatcherFactory.getInstance().getOrCreate();
-        return scopeMatcher.match(event);
+    private ContextType matchType(ThunderEvent event) {
+        ContextMatcher contextMatcher = ScopeMatcherFactory.getInstance().getOrCreate();
+        return contextMatcher.match(event);
     }
 
 
-    public Optional<? extends CodeModifier> create(ThunderEvent thunderEvent, ScopeType scopeType) {
+    public Optional<? extends CodeModifier> create(ThunderEvent thunderEvent, ContextType contextType) {
         PsiFile psiFile = thunderEvent.getFile();
         if (!(psiFile instanceof PsiJavaFile)) {
             return Optional.empty();
         }
         PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
-        switch (scopeType) {
+        switch (contextType) {
             case UNIT_TEST_CLASS:
                 return UnitTestCodeModifier.create(psiJavaFile);
-            case REPOSITORY:
+            case REPOSITORY_METHOD:
                 RepositoryContextParser parser = new RepositoryContextParser(thunderEvent);
                 return RepositoryCodeModifier.from(parser.findCurrentMethod(), parser.findEntityClass(),
                         parser.findDaoIdentifierNearFocusedElement(), parser.findDaoField());
             case BUILDER:
-                LombokBuilderScopeParser builderContextParser = new LombokBuilderScopeParser(thunderEvent);
+                LombokBuilderContextParser builderContextParser = new LombokBuilderContextParser(thunderEvent);
                 return Optional.of(new BuilderCodeModifier(builderContextParser,
                         BuilderParameterProviderFactory.getInstance().create(builderContextParser)));
             default:

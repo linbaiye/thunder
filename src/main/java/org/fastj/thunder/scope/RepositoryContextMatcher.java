@@ -3,9 +3,9 @@ package org.fastj.thunder.scope;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 
-public class RepositoryScopeMatcher extends AbstractScopeMatcher {
+public class RepositoryContextMatcher extends AbstractContextMatcher {
 
-    public RepositoryScopeMatcher(ScopeMatcher next) {
+    public RepositoryContextMatcher(ContextMatcher next) {
         super(next);
     }
 
@@ -23,7 +23,7 @@ public class RepositoryScopeMatcher extends AbstractScopeMatcher {
     }
 
     @Override
-    protected ScopeType doMatch(ThunderEvent thunderEvent) {
-        return isInsideRepositoryScope(thunderEvent) ? ScopeType.REPOSITORY : null;
+    protected ContextType doMatch(ThunderEvent thunderEvent) {
+        return isInsideRepositoryScope(thunderEvent) ? ContextType.REPOSITORY_METHOD : null;
     }
 }

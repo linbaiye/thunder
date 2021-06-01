@@ -13,11 +13,11 @@ import java.util.List;
 
 public class BuilderCodeModifier implements CodeModifier {
 
-    private final LombokBuilderScopeParser contextParser;
+    private final LombokBuilderContextParser contextParser;
 
     private final BuilderParameterProvider builderParameterProvider;
 
-    public BuilderCodeModifier(LombokBuilderScopeParser contextParser,
+    public BuilderCodeModifier(LombokBuilderContextParser contextParser,
                                BuilderParameterProvider builderParameterProvider) {
         this.contextParser = contextParser;
         this.builderParameterProvider = builderParameterProvider;
