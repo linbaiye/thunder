@@ -12,9 +12,9 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
 import org.fastj.thunder.logging.LoggerFactory;
-import org.fastj.thunder.modifier.CodeModifier;
-import org.fastj.thunder.modifier.CodeModifierFactory;
-import org.fastj.thunder.scope.ActionThunderEvent;
+import org.fastj.thunder.completer.CodeCompleter;
+import org.fastj.thunder.completer.CodeCompleterFactory;
+import org.fastj.thunder.context.ActionThunderEvent;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -192,8 +192,8 @@ public class PopupDialogAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         LoggerFactory.setProject(event.getProject());
-        Optional<? extends CodeModifier> optional = CodeModifierFactory.getInstance().create(new ActionThunderEvent(event));
-        optional.ifPresent(CodeModifier::tryModify);
+        Optional<? extends CodeCompleter> optional = CodeCompleterFactory.getInstance().create(new ActionThunderEvent(event));
+        optional.ifPresent(CodeCompleter::tryComplete);
 //        parseElement(event);
     }
 }
