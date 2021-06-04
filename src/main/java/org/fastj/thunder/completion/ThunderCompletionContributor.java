@@ -5,6 +5,7 @@ import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.PsiJavaPatterns;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +32,7 @@ public class ThunderCompletionContributor extends CompletionContributor {
     }
 
 
-    private final static ElementPattern<? extends PsiElement> BUILDER_PATTERN =  PlatformPatterns.
+    private final static ElementPattern<? extends PsiElement> BUILDER_PATTERN =  PsiJavaPatterns.
                 psiElement().afterLeaf(psiElement(JavaTokenType.DOT)
                     .afterSibling(psiElement(PsiMethodCallExpression.class)
                     .with(new PatternCondition<PsiMethodCallExpression>("Matching builder") {
@@ -43,7 +44,7 @@ public class ThunderCompletionContributor extends CompletionContributor {
             })));
 
 
-    private final static ElementPattern<? extends PsiElement> REPOSITORY_PATTERN = PlatformPatterns.
+    private final static ElementPattern<? extends PsiElement> MYBATIS_METHOD_PARAMETER_PATTERN = PlatformPatterns.
             psiElement(PsiIdentifier.class)
             .afterSibling(psiElement(PsiReferenceParameterList.class))
             .withAncestor(3, psiElement(PsiMethodCallExpression.class)
@@ -77,8 +78,21 @@ public class ThunderCompletionContributor extends CompletionContributor {
                     })
             );
 
+
+    private final static ElementPattern<? extends PsiElement> MOCK_CLASS_PATTERN =  PsiJavaPatterns.psiElement()
+            .afterLeaf(psiElement(JavaTokenType.DOT)
+            .afterSibling(psiElement(PsiJavaCodeReferenceElement.class)
+                    .with(new PatternCondition<PsiJavaCodeReferenceElement>("Matching mock class") {
+                        @Override
+                        public boolean accepts(@NotNull PsiJavaCodeReferenceElement psiJavaCodeReferenceElement, ProcessingContext context) {
+                            PsiFile psiFile = psiJavaCodeReferenceElement.getContainingFile();
+                            return psiFile.getOriginalFile().getVirtualFile().getPath().contains("src/test/java");
+                        }
+                    })));
+
     public ThunderCompletionContributor() {
         extend(CompletionType.BASIC, BUILDER_PATTERN, new BuilderCompletionProvider());
-        extend(CompletionType.BASIC, REPOSITORY_PATTERN, new RepositoryCompletionProvider());
+        extend(CompletionType.BASIC, MYBATIS_METHOD_PARAMETER_PATTERN, new MybatisCompletionProvider());
+        extend(CompletionType.BASIC, MOCK_CLASS_PATTERN, new MockitoCompletionProvider());
     }
 }

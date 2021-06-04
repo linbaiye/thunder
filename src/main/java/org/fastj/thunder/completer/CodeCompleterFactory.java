@@ -5,6 +5,8 @@ import com.intellij.psi.PsiJavaFile;
 import org.fastj.thunder.completer.builder.BuilderCodeCompleter;
 import org.fastj.thunder.completer.builder.BuilderParameterProviderFactory;
 import org.fastj.thunder.completer.builder.LombokBuilderContextAnalyser;
+import org.fastj.thunder.completer.mockclass.MockClassCompleter;
+import org.fastj.thunder.completer.mockclass.MockClassContextAnalyser;
 import org.fastj.thunder.completer.mybatis.MybatisMethodParameterCompleter;
 import org.fastj.thunder.completer.mybatis.RepositoryContextAnalyser;
 import org.fastj.thunder.context.*;
@@ -36,6 +38,8 @@ public class CodeCompleterFactory {
             case MYBATIS_METHOD_PARAMETER:
                 RepositoryContextAnalyser parser = new RepositoryContextAnalyser(thunderEvent);
                 return Optional.of(new MybatisMethodParameterCompleter(parser));
+            case MOCK_CLASS:
+                return Optional.of(new MockClassCompleter(new MockClassContextAnalyser(thunderEvent)));
             case BUILDER:
                 LombokBuilderContextAnalyser builderContextParser = new LombokBuilderContextAnalyser(thunderEvent);
                 return Optional.of(new BuilderCodeCompleter(builderContextParser,

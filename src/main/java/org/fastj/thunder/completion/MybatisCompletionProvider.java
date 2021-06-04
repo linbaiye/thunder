@@ -13,13 +13,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
-public class RepositoryCompletionProvider extends CompletionProvider<CompletionParameters> {
+public class MybatisCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters,
                                   @NotNull ProcessingContext context,
                                   @NotNull CompletionResultSet result) {
         result.addElement(LookupElementBuilder.create("lambda")
+                .withTypeText("new QueryWrapper<>()", null, true)
                 .withInsertHandler((insertionContext, element) -> {
                     Optional<? extends CodeCompleter> optionalCodeModifier = CodeCompleterFactory.getInstance().create(new CompletionThunderEvent(insertionContext),
                             ContextType.MYBATIS_METHOD_PARAMETER);

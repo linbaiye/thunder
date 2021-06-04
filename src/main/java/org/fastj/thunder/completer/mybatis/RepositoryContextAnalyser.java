@@ -7,6 +7,8 @@ import com.intellij.psi.util.PsiTypesUtil;
 import org.fastj.thunder.completer.AbstractContextAnalyser;
 import org.fastj.thunder.context.ThunderEvent;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 
 public class RepositoryContextAnalyser extends AbstractContextAnalyser {
 
@@ -28,7 +30,14 @@ public class RepositoryContextAnalyser extends AbstractContextAnalyser {
         if (psiElement instanceof PsiIdentifier) {
             return (PsiIdentifier) psiElement;
         }
-        return null;
+        AtomicReference<PsiIdentifier> container = new AtomicReference<>();
+        psiElement.getParent().acceptChildren(new JavaRecursiveElementVisitor() {
+            @Override
+            public void visitIdentifier(PsiIdentifier identifier) {
+                container.set(identifier);
+            }
+        });
+        return container.get();
     }
 
     private PsiClass findRepositoryClass(PsiIdentifier psiIdentifier) {
@@ -77,15 +86,6 @@ public class RepositoryContextAnalyser extends AbstractContextAnalyser {
         }
         PsiClassReferenceType entityType = (PsiClassReferenceType)psiType;
         return entityType.resolve();
-    }
-
-    private PsiMethod findMethod(PsiElement element) {
-        PsiMethod method = (element instanceof PsiMethod) ? (PsiMethod) element :
-                PsiTreeUtil.getParentOfType(element, PsiMethod.class);
-        if (method != null && method.getContainingClass() instanceof PsiAnonymousClass) {
-            return findMethod(method.getParent());
-        }
-        return method;
     }
 
     public PsiClass getEntityClass() {

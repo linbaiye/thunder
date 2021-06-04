@@ -14,6 +14,11 @@ public enum ContextType {
      */
     BUILDER,
 
+    /**
+     * We are trying to mock a class.
+     */
+    MOCK_CLASS,
+
     UNKNOWN,
     ;
 

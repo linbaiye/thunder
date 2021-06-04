@@ -7,14 +7,19 @@ import org.junit.Assert;
 public class CompletionContributorTest extends LightJavaCodeInsightFixtureTestCase {
 
 
-    private void assertContainsThunderLookup(LookupElement[] lookupElements) {
+    private void assertContainsLookup(LookupElement[] lookupElements, String target) {
         boolean found = false;
         for (LookupElement lookupElement : lookupElements) {
-            if ("thunder".equals(lookupElement.getLookupString())) {
+            System.out.println(lookupElement.getLookupString());
+            if (target.equals(lookupElement.getLookupString())) {
                 found = true;
             }
         }
         Assert.assertTrue(found);
+    }
+
+    private void assertContainsThunderLookup(LookupElement[] lookupElements) {
+        assertContainsLookup(lookupElements, "thunder");
     }
 
     public void testBuilderSuggestion() {
@@ -23,18 +28,16 @@ public class CompletionContributorTest extends LightJavaCodeInsightFixtureTestCa
         assertContainsThunderLookup(lookupElements);
     }
 
-    public void testRepositorySuggestion() {
-        myFixture.configureByText("Test.java", "public class Test {" +
-                "private EntityDao entityDao;" +
-                "public void test() {" +
-                "   entityDao.selectOne(l<caret>)" +
-                "}");
+    public void testMybatisMethodSuggestion() {
+        myFixture.configureByFile("main/java/thunder/MybatisMethodParamterSuggestionTest.java");
         LookupElement[] lookupElements = myFixture.completeBasic();
-        if (lookupElements != null) {
-            for (LookupElement lookupElement : lookupElements) {
-                System.out.println(lookupElement.getLookupString());
-            }
-        }
+        assertContainsLookup(lookupElements, "lambda");
+    }
+
+    public void testMockSuggestion() {
+        myFixture.configureByFile("test/java/mock/MockitoContributorTest.java");
+        LookupElement[] lookupElements = myFixture.completeBasic();
+        assertContainsLookup(lookupElements, "mock");
     }
 
     @Override

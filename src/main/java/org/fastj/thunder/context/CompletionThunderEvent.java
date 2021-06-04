@@ -10,13 +10,16 @@ public class CompletionThunderEvent implements ThunderEvent {
 
     private final InsertionContext insertionContext;
 
+    private final PsiElement elementAtCaret;
+
     public CompletionThunderEvent(InsertionContext insertionContext) {
         this.insertionContext = insertionContext;
+        elementAtCaret = getFile().findElementAt(getCaretOffset());
     }
 
     @Override
     public PsiElement getElementAtCaret() {
-        return getFile().findElementAt(getCaretOffset());
+        return elementAtCaret;
     }
 
     @Override
