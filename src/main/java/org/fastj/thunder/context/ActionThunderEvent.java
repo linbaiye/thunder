@@ -12,13 +12,16 @@ public class ActionThunderEvent implements ThunderEvent {
 
     private final AnActionEvent anActionEvent;
 
+    private final PsiElement elementAtCaret;
+
     public ActionThunderEvent(AnActionEvent anActionEvent) {
         this.anActionEvent = anActionEvent;
+        this.elementAtCaret = getFile().findElementAt(getCaretOffset());
     }
 
     @Override
     public PsiElement getElementAtCaret() {
-        return getFile().findElementAt(getCaretOffset());
+        return elementAtCaret;
     }
 
     @Override

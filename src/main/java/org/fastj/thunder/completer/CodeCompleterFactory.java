@@ -9,6 +9,8 @@ import org.fastj.thunder.completer.mockclass.MockClassCompleter;
 import org.fastj.thunder.completer.mockclass.MockClassContextAnalyser;
 import org.fastj.thunder.completer.mybatis.MybatisMethodParameterCompleter;
 import org.fastj.thunder.completer.mybatis.RepositoryContextAnalyser;
+import org.fastj.thunder.completer.validation.ValidationAnnotationCodeCompleter;
+import org.fastj.thunder.completer.validation.ValidationAnnotationContextAnalyser;
 import org.fastj.thunder.context.*;
 
 import java.util.Optional;
@@ -44,6 +46,9 @@ public class CodeCompleterFactory {
                 LombokBuilderContextAnalyser builderContextParser = new LombokBuilderContextAnalyser(thunderEvent);
                 return Optional.of(new BuilderCodeCompleter(builderContextParser,
                         BuilderParameterProviderFactory.getInstance().create(builderContextParser)));
+            case VALIDATOR_ANNOTATIONS:
+                ValidationAnnotationContextAnalyser contextAnalyser = new ValidationAnnotationContextAnalyser(thunderEvent);
+                return Optional.of(new ValidationAnnotationCodeCompleter(contextAnalyser));
             default:
                 return Optional.empty();
         }

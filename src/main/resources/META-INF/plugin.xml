@@ -24,9 +24,18 @@
     <!--    </extensions>-->
 
     <actions>
-        <action id="org.fastj.thunder.PopupDialogAction" class="org.fastj.thunder.PopupDialogAction"
-                text="Thunder" description="Development made faster.">
-            <add-to-group group-id="CodeMenu" anchor="last"  />
+        <action id="org.fastj.thunder.ValidateAction" class="org.fastj.thunder.ui.ValidatorAnnotationAction"
+                text="Validator Annotations" description="Add validation annotations onto all fields in the current class.">
+            <add-to-group group-id="GenerateGroup" anchor="last"  />
         </action>
     </actions>
+
+<!--    <actions>-->
+<!--        <group id="org.fastj.thunder.DynamicActionGroup"-->
+<!--               text="Thunder Actions" description="Actions"-->
+<!--               class="org.fastj.thunder.ui.DynamicActionGroup" popup="true">-->
+<!--            <add-to-group group-id="GenerateGroup" anchor="last" />-->
+<!--        </group>-->
+<!--    </actions>-->
+
 </idea-plugin>

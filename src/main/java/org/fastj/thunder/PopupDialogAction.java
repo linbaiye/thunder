@@ -27,10 +27,14 @@ public class PopupDialogAction extends AnAction {
 
 
     @Override
-    public void update(@NotNull AnActionEvent e) {
-        // Set the availability based on whether a project is open
-        Project project = e.getProject();
-        e.getPresentation().setEnabledAndVisible(project != null);
+    public void update(@NotNull AnActionEvent event) {
+        Project project = event.getProject();
+        event.getPresentation().setText("Validator Annotation");
+        Editor editor = event.getData(CommonDataKeys.EDITOR);
+        PsiFile file = event.getData(CommonDataKeys.PSI_FILE);
+        event.getPresentation().setEnabledAndVisible(editor != null && file instanceof PsiJavaFile);
+        // Take this opportunity to set an icon for the group.
+//        event.getPresentation().setIcon(SdkIcons.Sdk_default_icon);
     }
 
     private void testmenu(AnActionEvent event) {
@@ -191,9 +195,10 @@ public class PopupDialogAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
-        LoggerFactory.setProject(event.getProject());
-        Optional<? extends CodeCompleter> optional = CodeCompleterFactory.getInstance().create(new ActionThunderEvent(event));
-        optional.ifPresent(CodeCompleter::tryComplete);
+        System.out.println(event.getPresentation().getText());
+//        LoggerFactory.setProject(event.getProject());
+//        Optional<? extends CodeCompleter> optional = CodeCompleterFactory.getInstance().create(new ActionThunderEvent(event));
+//        optional.ifPresent(CodeCompleter::tryComplete);
 //        parseElement(event);
     }
 }

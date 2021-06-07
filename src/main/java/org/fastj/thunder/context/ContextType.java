@@ -19,6 +19,9 @@ public enum ContextType {
      */
     MOCK_CLASS,
 
+
+    VALIDATOR_ANNOTATIONS,
+
     UNKNOWN,
     ;
 
