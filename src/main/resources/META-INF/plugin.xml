@@ -28,6 +28,10 @@
                 text="Validator Annotations" description="Add validation annotations onto all fields in the current class.">
             <add-to-group group-id="GenerateGroup" anchor="last"  />
         </action>
+        <action id="org.fastj.thunder.ui.InjectMocksAction" class="org.fastj.thunder.ui.InjectMocksAction"
+                text="Inject Mocks">
+            <add-to-group group-id="GenerateGroup" anchor="last"/>
+        </action>
     </actions>
 
 <!--    <actions>-->

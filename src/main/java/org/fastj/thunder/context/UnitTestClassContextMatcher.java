@@ -2,14 +2,11 @@ package org.fastj.thunder.context;
 
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
+import java.util.Set;
 
-public class UnitTestClassContextMatcher extends AbstractContextMatcher {
+public class UnitTestClassContextMatcher implements ContextMatcher {
 
-    public UnitTestClassContextMatcher(ContextMatcher next) {
-        super(next);
-    }
-
-    private boolean isUnitTest(ThunderEvent thunderEvent) {
+    private boolean isWithinUnitTestClass(ThunderEvent thunderEvent) {
         PsiFile psiFile = thunderEvent.getFile();
         if (!(psiFile instanceof PsiJavaFile)) {
             return false;
@@ -21,7 +18,10 @@ public class UnitTestClassContextMatcher extends AbstractContextMatcher {
     }
 
     @Override
-    protected ContextType doMatch(ThunderEvent thunderEvent) {
-        return isUnitTest(thunderEvent) ? ContextType.UNIT_TEST_CLASS : null;
+    public void addIfMatch(ThunderEvent event,
+                           Set<ContextType> result) {
+        if (isWithinUnitTestClass(event)) {
+            result.add(ContextType.INJECT_MOCKS);
+        }
     }
 }

@@ -19,18 +19,11 @@ public class ThunderCompletionContributor extends CompletionContributor {
 
     private final static Set<String> REPOSITORY_METHOD_NAMES = new HashSet<>();
 
-    private final static Set<String> REPOSITORY_PREFIX = new HashSet<>();
-
     static {
         REPOSITORY_METHOD_NAMES.add("selectOne");
         REPOSITORY_METHOD_NAMES.add("selectList");
         REPOSITORY_METHOD_NAMES.add("update");
-        REPOSITORY_PREFIX.add("l");
-        REPOSITORY_PREFIX.add("la");
-        REPOSITORY_PREFIX.add("lam");
-        REPOSITORY_PREFIX.add("lamd");
     }
-
 
     private final static ElementPattern<? extends PsiElement> BUILDER_PATTERN =  PsiJavaPatterns.
                 psiElement().afterLeaf(psiElement(JavaTokenType.DOT)
@@ -48,27 +41,6 @@ public class ThunderCompletionContributor extends CompletionContributor {
             psiElement(PsiIdentifier.class)
             .afterSibling(psiElement(PsiReferenceParameterList.class))
             .withAncestor(3, psiElement(PsiMethodCallExpression.class)
-//                    .withChild(psiElement(PsiReferenceExpression.class)
-//                            .with(new PatternCondition<PsiReferenceExpression>("Matching dao class") {
-//                        @Override
-//                        public boolean accepts(@NotNull PsiReferenceExpression referenceExpression, ProcessingContext context) {
-//                            PsiExpression expression = referenceExpression.getQualifierExpression();
-//                            if (expression == null) {
-//                                return false;
-//                            }
-//                            PsiClass psiClass = PsiTypesUtil.getPsiClass(expression.getType());
-//                            if (psiClass == null) {
-//                                return false;
-//                            }
-//                            PsiAnnotation[] annotations = psiClass.getAnnotations();
-//                            for (PsiAnnotation annotation : annotations) {
-//                                if ("repository".equalsIgnoreCase(annotation.getText())) {
-//                                    return true;
-//                                }
-//                            }
-//                            return false;
-//                        }
-//                    }))
                     .with(new PatternCondition<PsiMethodCallExpression>("Matching dao method name") {
                         @Override
                         public boolean accepts(@NotNull PsiMethodCallExpression psiMethodCallExpression, ProcessingContext context) {
@@ -82,13 +54,18 @@ public class ThunderCompletionContributor extends CompletionContributor {
     private final static ElementPattern<? extends PsiElement> MOCK_CLASS_PATTERN =  PsiJavaPatterns.psiElement()
             .afterLeaf(psiElement(JavaTokenType.DOT)
             .afterSibling(psiElement(PsiJavaCodeReferenceElement.class)
-                    .with(new PatternCondition<PsiJavaCodeReferenceElement>("Matching mock class") {
+                    .withChild(psiElement(PsiIdentifier.class).with(new PatternCondition<PsiIdentifier>("Matching mock class") {
                         @Override
-                        public boolean accepts(@NotNull PsiJavaCodeReferenceElement psiJavaCodeReferenceElement, ProcessingContext context) {
-                            PsiFile psiFile = psiJavaCodeReferenceElement.getContainingFile();
-                            return psiFile.getOriginalFile().getVirtualFile().getPath().contains("src/test/java");
+                        public boolean accepts(@NotNull PsiIdentifier psiIdentifier, ProcessingContext context) {
+                            PsiFile psiFile = psiIdentifier.getContainingFile();
+                            if (!psiFile.getOriginalFile().getVirtualFile().getPath().contains("src/test/java")) {
+                                return false;
+                            }
+                            char character = psiIdentifier.getText().charAt(0);
+                            return character >= 'A' && character <= 'Z';
                         }
-                    })));
+                    }))
+            ));
 
     public ThunderCompletionContributor() {
         extend(CompletionType.BASIC, BUILDER_PATTERN, new BuilderCompletionProvider());

@@ -1,6 +1,5 @@
 package org.fastj.thunder.completer.mockclass;
 
-import com.intellij.openapi.util.Condition;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.fastj.thunder.completer.AbstractContextAnalyser;

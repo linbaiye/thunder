@@ -2,39 +2,42 @@ package org.fastj.thunder.context;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 public class ContextMatcherFactory {
 
-    private final static ContextMatcherFactory SCOPE_MATCHER_REGISTRY = new ContextMatcherFactory();
+    private final static ContextMatcherFactory CONTEXT_MATCHER_FACTORY = new ContextMatcherFactory();
 
-    private volatile ContextMatcher head;
-
-    private static final List<Class<? extends ContextMatcher>> CLASS_LIST = Arrays.asList(
-            BuilderContextMatcher.class, RepositoryContextMatcher.class, UnitTestClassContextMatcher.class
+    private static final List<Class<? extends ContextMatcher>> CLASSES = Arrays.asList(
+            ValidationContextMatcher.class, UnitTestClassContextMatcher.class
     );
 
+    private volatile List<ContextMatcher> contextMatcherList;
+
     public static ContextMatcherFactory getInstance() {
-        return SCOPE_MATCHER_REGISTRY;
+        return CONTEXT_MATCHER_FACTORY;
     }
 
-    private synchronized void buildMatcherChain() {
+    private synchronized void buildMatchers() {
         try {
-            ContextMatcher current = null;
-            for (Class<? extends ContextMatcher> matcherClass : CLASS_LIST) {
-                Constructor<? extends ContextMatcher> constructor = matcherClass.getConstructor(ContextMatcher.class);
-                current = constructor.newInstance(current);
+            if (contextMatcherList != null) {
+                return;
             }
-            head = current;
+            contextMatcherList = new LinkedList<>();
+            for (Class<? extends ContextMatcher> matcherClass : CLASSES) {
+                Constructor<? extends ContextMatcher> constructor = matcherClass.getConstructor();
+                contextMatcherList.add(constructor.newInstance());
+            }
         } catch (Exception e) {
-            throw new RuntimeException("Failed build scope matcher.");
+            throw new RuntimeException("Failed to build context matchers.");
         }
     }
 
-    public ContextMatcher getOrCreate() {
-        if (head == null) {
-            buildMatcherChain();
+    public List<? extends ContextMatcher> getMatchers() {
+        if (contextMatcherList == null) {
+            buildMatchers();
         }
-        return head;
+        return contextMatcherList;
     }
 }

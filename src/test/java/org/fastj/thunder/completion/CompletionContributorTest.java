@@ -10,7 +10,6 @@ public class CompletionContributorTest extends LightJavaCodeInsightFixtureTestCa
     private void assertContainsLookup(LookupElement[] lookupElements, String target) {
         boolean found = false;
         for (LookupElement lookupElement : lookupElements) {
-            System.out.println(lookupElement.getLookupString());
             if (target.equals(lookupElement.getLookupString())) {
                 found = true;
             }
@@ -38,6 +37,12 @@ public class CompletionContributorTest extends LightJavaCodeInsightFixtureTestCa
         myFixture.configureByFile("test/java/mock/MockitoContributorTest.java");
         LookupElement[] lookupElements = myFixture.completeBasic();
         assertContainsLookup(lookupElements, "mock");
+    }
+
+    public void testLowerCaseMockSuggestion() {
+        myFixture.configureByFile("test/java/mock/MockitoLowerCaseContributorTest.java");
+        LookupElement[] lookupElements = myFixture.completeBasic();
+        Assert.assertEquals(0, lookupElements.length);
     }
 
     @Override

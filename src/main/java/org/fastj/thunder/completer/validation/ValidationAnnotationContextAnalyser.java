@@ -1,7 +1,7 @@
 package org.fastj.thunder.completer.validation;
 
-import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiTreeUtil;
 import org.fastj.thunder.completer.AbstractContextAnalyser;
 import org.fastj.thunder.context.ThunderEvent;
 
@@ -15,13 +15,12 @@ public class ValidationAnnotationContextAnalyser extends AbstractContextAnalyser
     }
 
     private PsiField[] findAllFields() {
-        PsiJavaFile psiJavaFile = (PsiJavaFile) thunderEvent.getFile();
-        PsiClass[] classes = psiJavaFile.getClasses();
-        for (PsiClass aClass : classes) {
-            PsiModifierList psiModifierList = aClass.getModifierList();
-            if (psiModifierList != null &&
-                    psiModifierList.hasExplicitModifier(PsiModifier.PUBLIC)) {
-                return aClass.getAllFields();
+        PsiElement element = thunderEvent.getElementAtCaret();
+        PsiClass psiClass = PsiTreeUtil.getParentOfType(element, PsiClass.class);
+        if (psiClass != null) {
+            PsiModifierList psiModifierList = psiClass.getModifierList();
+            if (psiModifierList != null) {
+                return psiClass.getAllFields();
             }
         }
         return new PsiField[0];

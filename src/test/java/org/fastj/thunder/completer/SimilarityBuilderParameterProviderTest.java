@@ -14,9 +14,9 @@ public class SimilarityBuilderParameterProviderTest extends LightJavaCodeInsight
         TestThunderEvent event = new TestThunderEvent(myFixture);
         LombokBuilderContextAnalyser lombokBuilderScopeParser = new LombokBuilderContextAnalyser(event);
         SimilarityBuilderParameterProvider provider = new SimilarityBuilderParameterProvider(null, lombokBuilderScopeParser);
-        String exp = provider.provideParameterExpression("key1");
-        Assert.assertEquals("k1", exp);
-        exp = provider.provideParameterExpression("setJustALittleWeiredName");
+//        String exp = provider.provideParameterExpression("ky1");
+//        Assert.assertEquals("k1", exp);
+        String exp = provider.provideParameterExpression("weiredn");
         Assert.assertEquals("weired", exp);
     }
 

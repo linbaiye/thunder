@@ -23,19 +23,15 @@ public class CodeCompleterFactory {
         return CODE_MODIFIER_FACTORY;
     }
 
-    private ContextType matchType(ThunderEvent event) {
-        ContextMatcher contextMatcher = ContextMatcherFactory.getInstance().getOrCreate();
-        return contextMatcher.match(event);
-    }
-
-    public Optional<? extends CodeCompleter> create(ThunderEvent thunderEvent, ContextType contextType) {
+    public Optional<? extends CodeCompleter> create(ThunderEvent thunderEvent,
+                                                    ContextType contextType) {
         PsiFile psiFile = thunderEvent.getFile();
         if (!(psiFile instanceof PsiJavaFile)) {
             return Optional.empty();
         }
         PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
         switch (contextType) {
-            case UNIT_TEST_CLASS:
+            case INJECT_MOCKS:
                 return UnitTestCodeCompleter.create(psiJavaFile);
             case MYBATIS_METHOD_PARAMETER:
                 RepositoryContextAnalyser parser = new RepositoryContextAnalyser(thunderEvent);
@@ -52,9 +48,5 @@ public class CodeCompleterFactory {
             default:
                 return Optional.empty();
         }
-    }
-
-    public Optional<? extends CodeCompleter> create(ThunderEvent thunderEvent) {
-        return create(thunderEvent, matchType(thunderEvent));
     }
 }

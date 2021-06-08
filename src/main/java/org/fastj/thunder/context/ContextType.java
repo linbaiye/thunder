@@ -5,7 +5,7 @@ package org.fastj.thunder.context;
  */
 public enum ContextType {
 
-    UNIT_TEST_CLASS,
+    INJECT_MOCKS,
 
     MYBATIS_METHOD_PARAMETER,
 
