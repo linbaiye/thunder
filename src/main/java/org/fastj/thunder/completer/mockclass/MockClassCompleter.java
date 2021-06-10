@@ -20,6 +20,7 @@ public class MockClassCompleter implements CodeCompleter {
     public void tryComplete() {
         PsiClass psiClass = contextAnalyser.getMockingClass();
         PsiElement toReplace = contextAnalyser.getElementToReplace();
+        // FIXME: NPE when triggered as a parameter.
         PsiElement expression = PsiElementFactory.getInstance(contextAnalyser.getProject()).createStatementFromText(
                 psiClass.getQualifiedName() + " " + NamingUtil.nameClass(psiClass.getName()) + " = org.mockito.Mockito.mock(" +
                         psiClass.getName() + ".class);"

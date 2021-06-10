@@ -5,6 +5,8 @@ import com.intellij.psi.PsiJavaFile;
 import org.fastj.thunder.completer.builder.BuilderCodeCompleter;
 import org.fastj.thunder.completer.builder.BuilderParameterProviderFactory;
 import org.fastj.thunder.completer.builder.LombokBuilderContextAnalyser;
+import org.fastj.thunder.completer.injectmocks.InjectMocksCodeCompleter;
+import org.fastj.thunder.completer.injectmocks.InjectMocksContextAnalyser;
 import org.fastj.thunder.completer.mockclass.MockClassCompleter;
 import org.fastj.thunder.completer.mockclass.MockClassContextAnalyser;
 import org.fastj.thunder.completer.mybatis.MybatisMethodParameterCompleter;
@@ -29,10 +31,9 @@ public class CodeCompleterFactory {
         if (!(psiFile instanceof PsiJavaFile)) {
             return Optional.empty();
         }
-        PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
         switch (contextType) {
             case INJECT_MOCKS:
-                return UnitTestCodeCompleter.create(psiJavaFile);
+                return Optional.of(new InjectMocksCodeCompleter(new InjectMocksContextAnalyser(thunderEvent)));
             case MYBATIS_METHOD_PARAMETER:
                 RepositoryContextAnalyser parser = new RepositoryContextAnalyser(thunderEvent);
                 return Optional.of(new MybatisMethodParameterCompleter(parser));
