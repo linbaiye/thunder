@@ -26,6 +26,19 @@ public class MockClassCodeCompleterTest extends LightJavaCodeInsightFixtureTestC
         Assert.assertTrue(statement.getText().contains("MockingClass mockingClass = org.mockito.Mockito.mock(MockingClass.class);"));
     }
 
+
+    public void testMockClassAsParameter() {
+        PsiFile file = myFixture.configureByFile("main/java/thunder/mockclass/MockClassAsParameterCompleterTest.java");
+        ThunderEvent event = new TestThunderEvent(myFixture);
+        Optional<? extends CodeCompleter> codeCompleter = CodeCompleterFactory.getInstance().create(event, ContextType.MOCK_CLASS);
+        codeCompleter.ifPresent(CodeCompleter::tryComplete);
+        PsiClass psiClass = ((PsiJavaFile)file).getClasses()[1];
+        PsiMethod method = psiClass.findMethodsByName("test", true)[0];
+        PsiCodeBlock body = method.getBody();
+        PsiStatement statement = PsiTreeUtil.getChildOfType(body, PsiStatement.class);
+        Assert.assertTrue(statement.getText().contains("org.mockito.Mockito.mock(MockingClass.class))"));
+    }
+
     @Override
     protected String getTestDataPath() {
         return "src/test/testData";

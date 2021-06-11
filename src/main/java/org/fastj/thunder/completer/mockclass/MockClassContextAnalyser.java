@@ -22,10 +22,13 @@ public class MockClassContextAnalyser extends AbstractContextAnalyser {
 
     private PsiClass findMockingClass() {
         PsiElement element = thunderEvent.getElementAtCaret();
-        if (!(element.getPrevSibling() instanceof PsiExpressionStatement)) {
+        if (!(element.getPrevSibling() instanceof PsiExpressionStatement) &&
+                !(element.getPrevSibling() instanceof PsiReferenceExpression)) {
             return null;
         }
-        PsiReferenceExpression referenceExpression = PsiTreeUtil.findChildOfType(element.getPrevSibling(), PsiReferenceExpression.class);
+        PsiReferenceExpression referenceExpression = element.getPrevSibling() instanceof PsiReferenceExpression ?
+                (PsiReferenceExpression) element.getPrevSibling() :
+                PsiTreeUtil.findChildOfType(element.getPrevSibling(), PsiReferenceExpression.class);
         if (referenceExpression == null) {
             return null;
         }
@@ -41,7 +44,8 @@ public class MockClassContextAnalyser extends AbstractContextAnalyser {
     private PsiElement findToBeReplacedElement() {
         PsiElement psiElement = thunderEvent.getElementAtCaret();
         PsiElement sibling = psiElement.getPrevSibling();
-        return sibling instanceof PsiExpressionStatement ? sibling : null;
+        return sibling instanceof PsiExpressionStatement ||
+                sibling instanceof PsiReferenceExpression ? sibling : null;
     }
 
     /**
